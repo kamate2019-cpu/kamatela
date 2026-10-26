@@ -28,6 +28,7 @@ export const HomePage: React.FC = () => {
   const [attachedVideoTrack, setAttachedVideoTrack] = useState<AIMusicTrack | null>(null);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register' | 'switch'>('login');
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
 
   const {
@@ -120,7 +121,10 @@ export const HomePage: React.FC = () => {
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenPwaGuide={() => setShowPwaGuide(true)}
         onOpenTopUp={() => setIsTopUpModalOpen(true)}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenAuthModal={(mode = 'login') => {
+          setAuthInitialMode(mode);
+          setIsAuthModalOpen(true);
+        }}
         onOpenNetworkMonitor={() => setIsNetworkModalOpen(true)}
       />
 
@@ -321,6 +325,7 @@ export const HomePage: React.FC = () => {
         onLogin={login}
         onLogout={logout}
         onSwitchAccount={switchAccount}
+        initialMode={authInitialMode}
       />
 
       {/* Cross-Network Diagnostics, Latency Monitor & Data Saver Modal */}

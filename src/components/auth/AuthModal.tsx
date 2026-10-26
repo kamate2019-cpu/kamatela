@@ -33,6 +33,7 @@ interface AuthModalProps {
   onLogin: (user: User, token?: string) => void;
   onLogout: () => void;
   onSwitchAccount: (user: User) => void;
+  initialMode?: 'login' | 'register' | 'switch';
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -43,12 +44,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLogin,
   onLogout,
   onSwitchAccount,
+  initialMode = 'login',
 }) => {
-  const [mode, setMode] = useState<'login' | 'register' | 'switch'>('switch');
+  const [mode, setMode] = useState<'login' | 'register' | 'switch'>(initialMode);
   const [identifier, setIdentifier] = useState('kamate2019@gmail.com');
   const [password, setPassword] = useState('••••••••');
   const [fullName, setFullName] = useState('Alex Kamate');
   const [accountType, setAccountType] = useState<'creator' | 'business'>('creator');
+
+  React.useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode, isOpen]);
 
   if (!isOpen) return null;
 
@@ -208,6 +216,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="flex rounded-xl bg-muted p-0.5 border border-border text-xs">
             <button
               type="button"
+              onClick={() => setMode('login')}
+              className={`flex-1 py-1.5 rounded-lg font-bold transition-colors ${
+                mode === 'login'
+                  ? 'bg-card text-emerald-400 shadow-sm border border-border/80'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('register')}
+              className={`flex-1 py-1.5 rounded-lg font-bold transition-colors ${
+                mode === 'register'
+                  ? 'bg-card text-emerald-400 shadow-sm border border-border/80'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Sign Up
+            </button>
+            <button
+              type="button"
               onClick={() => setMode('switch')}
               className={`flex-1 py-1.5 rounded-lg font-bold transition-colors ${
                 mode === 'switch'
@@ -215,29 +245,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              1-Tap Switch
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('login')}
-              className={`flex-1 py-1.5 rounded-lg font-bold transition-colors ${
-                mode === 'login'
-                  ? 'bg-card text-foreground shadow-sm border border-border/80'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Email / Phone
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('register')}
-              className={`flex-1 py-1.5 rounded-lg font-bold transition-colors ${
-                mode === 'register'
-                  ? 'bg-card text-foreground shadow-sm border border-border/80'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Register
+              Demo Switch
             </button>
           </div>
         </div>
@@ -385,6 +393,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   and wallet remain synced automatically.
                 </p>
               </div>
+
+              <div className="pt-2 text-center text-xs text-muted-foreground">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('register')}
+                  className="text-emerald-400 font-bold hover:underline ml-1"
+                >
+                  Create one (Sign Up)
+                </button>
+              </div>
             </form>
           )}
 
@@ -455,6 +474,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 Create Account & Unlock All Modules
               </Button>
+
+              <div className="pt-2 text-center text-xs text-muted-foreground">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className="text-emerald-400 font-bold hover:underline ml-1"
+                >
+                  Log In (Sign In)
+                </button>
+              </div>
             </form>
           )}
         </div>

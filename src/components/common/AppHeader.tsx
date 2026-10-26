@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Bell, PlusCircle, Smartphone, BadgeCheck, Wifi, WifiOff, Signal } from 'lucide-react';
+import { Sparkles, Bell, PlusCircle, Smartphone, BadgeCheck, Wifi, WifiOff, Signal, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { TabType, User } from '@/types/kamatela';
@@ -11,7 +11,7 @@ interface AppHeaderProps {
   onOpenUpload: () => void;
   onOpenPwaGuide: () => void;
   onOpenTopUp?: () => void;
-  onOpenAuthModal?: () => void;
+  onOpenAuthModal?: (mode?: 'login' | 'register' | 'switch') => void;
   onOpenNetworkMonitor?: () => void;
 }
 
@@ -176,18 +176,41 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           </Button>
 
-          {/* User Avatar & Single Sign-On Account Switcher Trigger */}
+          {/* Visible Sign In & Sign Up Buttons */}
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onOpenAuthModal?.('login')}
+              className="h-8 px-2.5 text-xs font-semibold rounded-full border-border/80 hover:bg-muted hover:text-foreground"
+              title="Sign in to your KAMATELA account"
+            >
+              <LogIn className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+              <span>Sign In</span>
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onOpenAuthModal?.('register')}
+              className="h-8 px-3 text-xs font-bold rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+              title="Create a new KAMATELA account"
+            >
+              <UserPlus className="w-3.5 h-3.5 mr-1" />
+              <span>Sign Up</span>
+            </Button>
+          </div>
+
+          {/* User Avatar Account Switcher Trigger */}
           <button
             type="button"
-            onClick={onOpenAuthModal}
+            onClick={() => onOpenAuthModal?.('switch')}
             className="flex items-center gap-1.5 p-0.5 rounded-full hover:bg-muted/60 transition-all border border-border/70 hover:border-emerald-500/50"
-            title="Single Sign-On Active - Click to Switch Account or Manage Auth"
+            title="Account Menu - Click to Switch Profiles or Sign Out"
           >
             <div className="relative w-8 h-8 rounded-full overflow-hidden border border-emerald-500/40 shrink-0">
               <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
               <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 border border-background shadow-sm" />
             </div>
-            <span className="hidden lg:inline text-[11px] font-bold text-foreground truncate max-w-[80px] pl-0.5 pr-1.5">
+            <span className="hidden xl:inline text-[11px] font-bold text-foreground truncate max-w-[80px] pl-0.5 pr-1.5">
               {currentUser.name.split(' ')[0]}
             </span>
           </button>

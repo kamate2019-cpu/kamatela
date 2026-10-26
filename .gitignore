@@ -35,3 +35,4 @@ history/*.json
 .native-wind-cache
 .vite
 .vercel
+historical_context.txt
