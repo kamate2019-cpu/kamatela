@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Share, PlusSquare, X, Smartphone, Check } from 'lucide-react';
+import { Download, Share, PlusSquare, X, Smartphone, Check, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import QRCodeDataUrl from '@/components/ui/qrcodedataurl';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -173,6 +174,20 @@ export const PwaInstallPrompt: React.FC = () => {
               </div>
             )}
 
+            {/* Instant Phone QR Scan Card */}
+            <div className="mt-3 p-3 rounded-xl bg-background border border-border/80 flex flex-col items-center text-center gap-2">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <QrCode className="w-4 h-4 text-primary" /> Scan with Phone Camera
+              </span>
+              <div className="p-2 rounded-lg bg-white shadow-sm border border-border">
+                <QRCodeDataUrl text="https://kamatela.vercel.app" width={140} />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Point your phone camera here to launch <span className="font-semibold text-foreground">kamatela.vercel.app</span> directly!
+              </p>
+            </div>
+          </div>
+
             <div className="mt-4 pt-3 border-t border-border flex justify-end">
               <Button
                 variant="default"
@@ -183,7 +198,6 @@ export const PwaInstallPrompt: React.FC = () => {
                 <Check className="w-4 h-4 mr-1.5" /> Got it!
               </Button>
             </div>
-          </div>
         </DialogContent>
       </Dialog>
     </>
