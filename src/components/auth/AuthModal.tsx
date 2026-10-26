@@ -45,9 +45,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSwitchAccount,
 }) => {
   const [mode, setMode] = useState<'login' | 'register' | 'switch'>('switch');
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [identifier, setIdentifier] = useState('kamate2019@gmail.com');
+  const [password, setPassword] = useState('••••••••');
+  const [fullName, setFullName] = useState('Alex Kamate');
   const [accountType, setAccountType] = useState<'creator' | 'business'>('creator');
 
   if (!isOpen) return null;
