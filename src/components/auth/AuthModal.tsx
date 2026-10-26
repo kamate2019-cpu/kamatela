@@ -18,6 +18,8 @@ import {
   MessageSquare,
   Coins,
   Store,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +51,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [mode, setMode] = useState<'login' | 'register' | 'switch'>(initialMode);
   const [identifier, setIdentifier] = useState('kamate2019@gmail.com');
   const [password, setPassword] = useState('••••••••');
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('Alex Kamate');
   const [accountType, setAccountType] = useState<'creator' | 'business'>('creator');
 
@@ -114,11 +117,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         u.businessPhone === identifier
     );
 
+    const isEmail = identifier.includes('@');
     const targetUser: User = matched || {
       ...defaultUser,
       id: `user_${Date.now()}`,
-      name: identifier.includes('@') ? identifier.split('@')[0] : identifier,
+      name: isEmail ? identifier.split('@')[0] : `User_${identifier.slice(-4) || 'Mobile'}`,
       handle: `@${identifier.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+      businessEmail: isEmail ? identifier.trim() : undefined,
+      businessPhone: !isEmail ? identifier.trim() : undefined,
     };
 
     onLogin(targetUser, `session_${Date.now()}`);
@@ -133,6 +139,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    const isEmail = identifier.includes('@');
     const newUser: User = {
       id: `user_${Date.now()}`,
       name: fullName.trim(),
@@ -143,6 +150,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       isBusiness: accountType === 'business',
       businessName: accountType === 'business' ? fullName.trim() : undefined,
       businessCategory: accountType === 'business' ? 'Retail & Services' : undefined,
+      businessEmail: isEmail ? identifier.trim() : undefined,
+      businessPhone: !isEmail ? identifier.trim() : undefined,
       verified: true,
       followersCount: 100,
       followingCount: 15,
@@ -353,28 +362,52 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === 'login' && (
             <form onSubmit={handleManualLogin} className="space-y-3 pt-1">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-muted-foreground" /> Email or Phone Number
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Smartphone className="w-3.5 h-3.5 text-muted-foreground" />
+                    Email or Mobile Phone Number
+                  </label>
+                  {identifier.trim() && (
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      {identifier.includes('@') ? '✉️ Email format' : '📱 Phone format'}
+                    </span>
+                  )}
+                </div>
                 <Input
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. alex@kamatela.io or +1 (555) 438-9201"
+                  placeholder="e.g. kamate2019@gmail.com or +1 (555) 019-2834"
                   className="text-xs h-9 bg-muted/50 border-border"
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  Works with international numbers (e.g. +1, +231, +44) or any email.
+                </p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Lock className="w-3.5 h-3.5 text-muted-foreground" /> Password
-                </label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="text-xs h-9 bg-muted/50 border-border"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground" /> Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"
+                  >
+                    {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                    <span>{showPassword ? 'Hide' : 'Show'}</span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="text-xs h-9 bg-muted/50 border-border pr-8"
+                  />
+                </div>
               </div>
 
               <Button
@@ -420,11 +453,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Email or Mobile Phone</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Smartphone className="w-3.5 h-3.5 text-muted-foreground" />
+                    Email or Mobile Phone
+                  </label>
+                  {identifier.trim() && (
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      {identifier.includes('@') ? '✉️ Email format' : '📱 Phone format'}
+                    </span>
+                  )}
+                </div>
                 <Input
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. user@kamatela.com"
+                  placeholder="e.g. kamate2019@gmail.com or +1 (555) 019-2834"
                   className="text-xs h-9 bg-muted/50 border-border"
                 />
               </div>
@@ -432,7 +476,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">Password</label>
                 <Input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a secure password"
