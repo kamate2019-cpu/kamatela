@@ -57,9 +57,22 @@
     </script>
 
     <script>
+      // Auto-purge outdated v1 service worker caches so mobile browsers load latest updates
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          for (const name of names) {
+            if (name !== 'kamatela-cache-v5-live') {
+              caches.delete(name);
+            }
+          }
+        });
+      }
+
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch((err) => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            reg.update();
+          }).catch((err) => {
             console.warn('SW registration skipped:', err);
           });
         });
