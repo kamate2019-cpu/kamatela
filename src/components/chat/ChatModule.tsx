@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type {
   ChatConversation,
   UserStory,
@@ -19,7 +19,22 @@ import { LiveVoiceRoomModal } from '@/components/voiceRooms/LiveVoiceRoomModal';
 import { IncomingCallModal } from './IncomingCallModal';
 import { WhatsAppContactsModal } from './WhatsAppContactsModal';
 import { ContactQRModal } from './ContactQRModal';
-import { MessageSquare, PhoneCall, Radio, Smartphone, QrCode } from 'lucide-react';
+import {
+  MessageSquare,
+  PhoneCall,
+  Radio,
+  Smartphone,
+  QrCode,
+  ShieldCheck,
+  Lock,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  LogOut
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface ChatModuleProps {
   chats: ChatConversation[];
@@ -146,8 +161,315 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
     setActiveVoiceRoomId(newRoomId);
   };
 
+  // WhatsApp Phone Signup & Login Gate
+  const [isWhatsAppRegistered, setIsWhatsAppRegistered] = useState<boolean>(() => {
+    return localStorage.getItem('kamatela_whatsapp_registered') === 'true';
+  });
+  const [authStep, setAuthStep] = useState<1 | 2 | 3>(1);
+  const [authCountry, setAuthCountry] = useState('+225');
+  const [authPhone, setAuthPhone] = useState('07 01 23 45 67');
+  const [authOtp, setAuthOtp] = useState('');
+  const [authGeneratedCode, setAuthGeneratedCode] = useState('123456');
+  const [authResendSeconds, setAuthResendSeconds] = useState(45);
+  const [authName, setAuthName] = useState(currentUser.name || 'Alex Kamate');
+  const [authStatus, setAuthStatus] = useState('Hey there! I am using KAMATELA WhatsApp.');
+  const [authAvatar] = useState(
+    currentUser.avatar ||
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+  );
+
+  useEffect(() => {
+    let timer: any;
+    if (authStep === 2 && authResendSeconds > 0) {
+      timer = setInterval(() => {
+        setAuthResendSeconds((prev) => Math.max(0, prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [authStep, authResendSeconds]);
+
+  if (!isWhatsAppRegistered) {
+    return (
+      <div className="w-full max-w-md mx-auto my-3 p-5 bg-card/90 backdrop-blur-md border border-emerald-500/30 rounded-3xl shadow-2xl space-y-5">
+        {/* WhatsApp Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
+            <MessageSquare className="w-8 h-8" />
+          </div>
+          <h2 className="text-lg font-extrabold text-foreground tracking-tight">
+            Welcome to KAMATELA WhatsApp
+          </h2>
+          <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            <span>End-to-end encrypted messaging & calls</span>
+          </p>
+        </div>
+
+        {/* STEP 1: Phone Input */}
+        {authStep === 1 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!authPhone.trim()) {
+                toast.error('Please enter your mobile phone number');
+                return;
+              }
+              const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+              setAuthGeneratedCode(newCode);
+              setAuthOtp(newCode);
+              setAuthStep(2);
+              setAuthResendSeconds(45);
+              toast.success(`Verification Code: ${newCode} (Auto-filled on screen)`);
+            }}
+            className="space-y-4"
+          >
+            <div className="text-center space-y-1">
+              <h3 className="text-sm font-bold text-foreground">Verify your phone number</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Enter your mobile number to sign up or log in to your private chats.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <select
+                  value={authCountry}
+                  onChange={(e) => setAuthCountry(e.target.value)}
+                  className="w-32 h-11 px-2.5 rounded-xl bg-background border border-border text-xs font-semibold text-foreground focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="+225">🇨🇮 +225 (CI)</option>
+                  <option value="+224">🇬🇳 +224 (GN)</option>
+                  <option value="+223">🇲🇱 +223 (ML)</option>
+                  <option value="+221">🇸🇳 +221 (SN)</option>
+                  <option value="+234">🇳🇬 +234 (NG)</option>
+                  <option value="+233">🇬🇭 +233 (GH)</option>
+                  <option value="+1">🇺🇸 +1 (US)</option>
+                  <option value="+33">🇫🇷 +33 (FR)</option>
+                  <option value="+44">🇬🇧 +44 (UK)</option>
+                </select>
+                <Input
+                  type="tel"
+                  value={authPhone}
+                  onChange={(e) => setAuthPhone(e.target.value)}
+                  placeholder="07 01 23 45 67"
+                  className="flex-1 h-11 rounded-xl bg-background border-border text-sm font-semibold tracking-wide"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 gap-2"
+            >
+              <span>Agree & Continue</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </form>
+        )}
+
+        {/* STEP 2: SMS Verification */}
+        {authStep === 2 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const code = authOtp.trim() || authGeneratedCode || '123456';
+              if (code.length < 6) {
+                toast.error('Please enter the 6-digit verification code');
+                return;
+              }
+              toast.success('Phone verified successfully!');
+              setAuthStep(3);
+            }}
+            className="space-y-4"
+          >
+            <div className="text-center space-y-1">
+              <h3 className="text-sm font-bold text-foreground">Verifying {authCountry} {authPhone}</h3>
+              <p className="text-xs text-muted-foreground">
+                Enter the verification code to activate your account.{' '}
+                <button
+                  type="button"
+                  onClick={() => setAuthStep(1)}
+                  className="text-emerald-400 font-semibold hover:underline"
+                >
+                  Change number
+                </button>
+              </p>
+            </div>
+
+            {/* Prominent Verification Badge */}
+            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1 shadow-sm">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Your Verification Code</span>
+              </div>
+              <div className="text-2xl font-mono font-black text-emerald-300 tracking-widest py-0.5 select-all">
+                {authGeneratedCode}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Auto-filled below for instant 1-tap verification.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Input
+                type="text"
+                maxLength={6}
+                value={authOtp}
+                onChange={(e) => setAuthOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="1 2 3 4 5 6"
+                className="h-12 text-center text-lg font-mono font-bold tracking-widest rounded-xl bg-background border-emerald-500/50"
+              />
+
+              <div className="flex items-center justify-between text-xs pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAuthOtp(authGeneratedCode);
+                    toast.info(`Inserted code: ${authGeneratedCode}`);
+                  }}
+                  className="h-7 text-xs text-emerald-400 hover:text-emerald-300 gap-1 px-2"
+                >
+                  <Sparkles className="w-3 h-3" /> Insert Code
+                </Button>
+
+                <span className="text-muted-foreground text-[11px]">
+                  {authResendSeconds > 0 ? (
+                    `Resend in ${authResendSeconds}s`
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+                        setAuthGeneratedCode(newCode);
+                        setAuthOtp(newCode);
+                        setAuthResendSeconds(45);
+                        toast.success(`Resent code: ${newCode}`);
+                      }}
+                      className="text-emerald-400 font-bold hover:underline"
+                    >
+                      Resend SMS
+                    </button>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20"
+            >
+              Verify & Set Up Profile
+            </Button>
+          </form>
+        )}
+
+        {/* STEP 3: Profile Info */}
+        {authStep === 3 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!authName.trim()) {
+                toast.error('Please enter your name');
+                return;
+              }
+              const fullPhoneNumber = `${authCountry} ${authPhone.trim()}`;
+              localStorage.setItem('kamatela_whatsapp_registered', 'true');
+              localStorage.setItem('kamatela_whatsapp_phone', fullPhoneNumber);
+              localStorage.setItem('kamatela_whatsapp_name', authName.trim());
+              currentUser.name = authName.trim();
+              currentUser.businessPhone = fullPhoneNumber;
+              currentUser.avatar = authAvatar;
+              setIsWhatsAppRegistered(true);
+              toast.success(`Welcome to KAMATELA WhatsApp, ${authName.trim()}!`);
+            }}
+            className="space-y-4"
+          >
+            <div className="text-center space-y-1">
+              <h3 className="text-sm font-bold text-foreground">Profile Info</h3>
+              <p className="text-xs text-muted-foreground">
+                Please provide your name and an optional status.
+              </p>
+            </div>
+
+            <div className="flex justify-center py-1">
+              <img
+                src={authAvatar}
+                alt="Profile"
+                className="w-20 h-20 rounded-full object-cover border-2 border-emerald-500 shadow-md"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Your Name
+                </label>
+                <Input
+                  type="text"
+                  value={authName}
+                  onChange={(e) => setAuthName(e.target.value)}
+                  placeholder="e.g. Alex Kamate"
+                  className="h-11 mt-1 rounded-xl bg-background border-border text-sm font-semibold"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Status
+                </label>
+                <Input
+                  type="text"
+                  value={authStatus}
+                  onChange={(e) => setAuthStatus(e.target.value)}
+                  placeholder="Hey there! I am using KAMATELA."
+                  className="h-11 mt-1 rounded-xl bg-background border-border text-sm text-muted-foreground"
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20"
+            >
+              Start Chatting on WhatsApp
+            </Button>
+          </form>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-md md:max-w-4xl mx-auto space-y-3">
+      {/* WhatsApp Connected Status Bar */}
+      {!activeChat && (
+        <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-950/40 border border-emerald-500/25 rounded-2xl text-xs text-emerald-300">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="font-semibold text-emerald-400">WhatsApp:</span>
+            <span className="font-mono text-white text-[11px]">
+              {localStorage.getItem('kamatela_whatsapp_phone') || currentUser.businessPhone || '+225 07 01 23 45'}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.removeItem('kamatela_whatsapp_registered');
+              setIsWhatsAppRegistered(false);
+              setAuthStep(1);
+              toast.info('Logged out from WhatsApp. Enter number to sign in.');
+            }}
+            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-emerald-400 font-medium transition-colors"
+          >
+            <LogOut className="w-3 h-3" />
+            <span>Switch / Log Out</span>
+          </button>
+        </div>
+      )}
       {/* Top WhatsApp & Rooms Navigation (Chats / Voice Rooms / Calls) */}
       {!activeChat && (
         <div className="flex items-center justify-between border-b border-border/80 px-1 pb-1">

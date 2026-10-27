@@ -89,6 +89,60 @@ export const currentUser: User = {
 
 // Mock other users
 export const mockUsers: Record<string, User> = {
+  kamatela_official: {
+    id: 'user_official',
+    name: 'KAMATELA Official',
+    handle: '@kamatela',
+    avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+    bio: 'Official KAMATELA messaging and system verification account.',
+    coins: 10000,
+    isBusiness: true,
+    businessName: 'KAMATELA Security & System',
+    businessCategory: 'Official Platform',
+    businessRating: 5.0,
+    businessPhone: '+225 07 00 12 34',
+    businessEmail: 'support@kamatela.com',
+    businessAddress: 'KAMATELA Global Hub',
+    businessHours: '24/7 Official Support',
+    verified: true,
+    followersCount: 500000,
+    followingCount: 1,
+    likesCount: 2000000,
+  },
+  mamadou: {
+    id: 'user_mamadou',
+    name: 'Mamadou Diallo',
+    handle: '@mamadou_d',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+    bio: 'Digital Creator & Entrepreneur 🚀 Building in West Africa.',
+    coins: 850,
+    isBusiness: false,
+    verified: true,
+    businessPhone: '+224 622 11 22 33',
+    followersCount: 34200,
+    followingCount: 180,
+    likesCount: 140000,
+  },
+  fatoumata: {
+    id: 'user_fatoumata',
+    name: 'Fatoumata Traore',
+    handle: '@fatou_t',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    bio: 'Fashion designer & media creator 🎨',
+    coins: 600,
+    isBusiness: true,
+    businessName: 'Atelier Fatou Créations',
+    businessCategory: 'Apparel & Design',
+    businessRating: 4.95,
+    businessPhone: '+223 76 54 32 10',
+    businessEmail: 'contact@atelierfatou.com',
+    businessAddress: 'Bamako, Mali',
+    businessHours: 'Mon - Sat: 9:00 AM - 7:00 PM',
+    verified: true,
+    followersCount: 42000,
+    followingCount: 220,
+    likesCount: 310000,
+  },
   sophia: {
     id: 'user_sophia',
     name: 'Sophia Chen',
@@ -277,119 +331,75 @@ export const initialVideos: VideoItem[] = [
 
 export const initialChats: ChatConversation[] = [
   {
-    id: 'chat_zara',
+    id: 'chat_official',
     type: 'business',
-    participant: mockUsers.zara,
-    lastMessage: 'Your Titanium ANC Studio order #KAM-8921 has been dispatched with tracking!',
+    participant: mockUsers.kamatela_official,
+    lastMessage: 'Welcome to KAMATELA WhatsApp! Your account is verified. Tap here to start chatting securely.',
     lastTimestamp: '10:42 AM',
     unreadCount: 1,
     isPinned: true,
     messages: [
       {
         id: 'm1',
-        senderId: 'user_zara',
-        text: 'Welcome to Luxe Audio Labs on KAMATELA! How can we assist you with high-end audio today?',
-        timestamp: 'Yesterday 3:15 PM',
+        senderId: 'user_official',
+        text: 'Welcome to KAMATELA WhatsApp! Messages and calls are end-to-end encrypted. No one outside of this chat, not even KAMATELA, can read or listen to them.',
+        timestamp: '10:40 AM',
         status: 'read',
       },
       {
         id: 'm2',
-        senderId: 'user_me',
-        text: 'Hi! I saw the showcase video of the Titanium Studio headphones. Are they compatible with multi-device Bluetooth 5.4?',
-        timestamp: 'Yesterday 3:20 PM',
-        status: 'read',
-      },
-      {
-        id: 'm3',
-        senderId: 'user_zara',
-        text: 'Yes! They seamlessly connect to up to 3 devices simultaneously with lossless LDAC codec support.',
-        timestamp: 'Yesterday 3:22 PM',
-        status: 'read',
-      },
-      {
-        id: 'm4',
-        senderId: 'user_zara',
-        text: 'Your Titanium ANC Studio order #KAM-8921 has been dispatched with tracking!',
+        senderId: 'user_official',
+        text: 'Welcome to KAMATELA WhatsApp! Your account is verified. Tap here to start chatting securely.',
         timestamp: '10:42 AM',
         status: 'delivered',
-        productSnippet: {
-          id: 'prod_1',
-          title: 'Titanium ANC Wireless Studio Pro',
-          price: 249,
-          imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80',
-        }
       }
     ]
   },
   {
-    id: 'chat_sophia',
+    id: 'chat_mamadou',
     type: 'direct',
-    participant: mockUsers.sophia,
-    lastMessage: 'Check out the new video I posted on KAMATELA! What do you think of the intro transition?',
+    participant: mockUsers.mamadou,
+    lastMessage: 'Hey! Glad to see you on KAMATELA WhatsApp. Everything is running smoothly now!',
     lastTimestamp: '9:15 AM',
-    unreadCount: 2,
+    unreadCount: 0,
     isPinned: true,
     messages: [
       {
-        id: 'm5',
-        senderId: 'user_sophia',
-        text: 'Hey Alex! Are we still testing the new camera stabilizer this weekend?',
+        id: 'm3',
+        senderId: 'user_mamadou',
+        text: 'Hey! Are we testing the new video live streaming today?',
         timestamp: 'Yesterday 8:00 PM',
         status: 'read',
       },
       {
-        id: 'm6',
+        id: 'm4',
         senderId: 'user_me',
-        text: 'Absolutely! I have the gear charged and ready. Let us test at the marina.',
+        text: 'Yes! The camera and live co-hosting are ready. Let us test now.',
         timestamp: 'Yesterday 8:14 PM',
         status: 'read',
       },
       {
-        id: 'm7',
-        senderId: 'user_sophia',
-        text: 'Check out the new video I posted on KAMATELA! What do you think of the intro transition?',
+        id: 'm5',
+        senderId: 'user_mamadou',
+        text: 'Hey! Glad to see you on KAMATELA WhatsApp. Everything is running smoothly now!',
         timestamp: '9:15 AM',
         status: 'delivered',
       }
     ]
   },
   {
-    id: 'chat_elena',
+    id: 'chat_fatoumata',
     type: 'business',
-    participant: mockUsers.elena,
-    lastMessage: 'I reserved the Large size trench coat for you. Ready whenever you want it shipped.',
+    participant: mockUsers.fatoumata,
+    lastMessage: 'Hello! Welcome to KAMATELA. Feel free to reach out anytime.',
     lastTimestamp: 'Yesterday',
     unreadCount: 0,
     messages: [
       {
-        id: 'm8',
-        senderId: 'user_me',
-        text: 'Hello Elena, would love to inquire about custom embroidery on the minimalist trench.',
-        timestamp: '2 days ago',
-        status: 'read',
-      },
-      {
-        id: 'm9',
-        senderId: 'user_elena',
-        text: 'I reserved the Large size trench coat for you. Ready whenever you want it shipped.',
+        id: 'm6',
+        senderId: 'user_fatoumata',
+        text: 'Hello! Welcome to KAMATELA. Feel free to reach out anytime.',
         timestamp: 'Yesterday',
-        status: 'read',
-      }
-    ]
-  },
-  {
-    id: 'chat_marcus',
-    type: 'business',
-    participant: mockUsers.marcus,
-    lastMessage: 'Special wholesale pack discount code: KAMATELA_CHEF20 is applied!',
-    lastTimestamp: 'Oct 24',
-    unreadCount: 0,
-    messages: [
-      {
-        id: 'm10',
-        senderId: 'user_marcus',
-        text: 'Special wholesale pack discount code: KAMATELA_CHEF20 is applied!',
-        timestamp: 'Oct 24',
         status: 'read',
       }
     ]
@@ -844,7 +854,21 @@ export function useKamatelaStore() {
       )
     );
   };
-  const [chats, setChats] = useState<ChatConversation[]>(() => getSaved('chats', initialChats));
+  const [chats, setChats] = useState<ChatConversation[]>(() => {
+    const saved = getSaved<ChatConversation[] | null>('chats', null);
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      // Auto-migrate away from old legacy contact names if present
+      const hasOldNames = saved.some(
+        (c: any) =>
+          c.id === 'chat_zara' ||
+          c.id === 'chat_sophia' ||
+          c.id === 'chat_elena' ||
+          c.id === 'chat_marcus'
+      );
+      if (!hasOldNames) return saved;
+    }
+    return initialChats;
+  });
   const [stories, setStories] = useState<UserStory[]>(() => getSaved('stories', initialStories));
   const [products, setProducts] = useState<BusinessProduct[]>(() => getSaved('products', initialProducts));
   const [inquiries, setInquiries] = useState<BusinessInquiry[]>(() => getSaved('inquiries', []));
