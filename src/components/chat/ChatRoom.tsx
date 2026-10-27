@@ -19,11 +19,20 @@ import {
   Play,
   Pause,
   Disc,
+  Ban,
+  ShieldAlert,
+  Flag,
+  UserX,
+  UserCheck,
+  AlertTriangle,
+  X,
+  BellOff,
+  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import type { ChatConversation, User, AIMusicTrack } from '@/types/kamatela';
+import type { ChatConversation, User as KamatelaUser, AIMusicTrack } from '@/types/kamatela';
 import { VoiceNotePlayer } from './VoiceNotePlayer';
 import { soundEffects } from '@/utils/audioEffects';
 import { aiMusicSynth } from '@/utils/aiMusicSynth';
@@ -33,9 +42,13 @@ interface ChatRoomProps {
   currentUserId: string;
   onBack: () => void;
   onSendMessage: (chatId: string, text: string, mediaType?: 'image' | 'voice' | 'product' | 'song' | 'call_memo', mediaUrl?: string) => void;
-  onStartCall: (user: User, isVideo: boolean) => void;
-  onSimulateIncomingCall?: (caller: User, isVideo: boolean) => void;
+  onStartCall: (user: KamatelaUser, isVideo: boolean) => void;
+  onSimulateIncomingCall?: (caller: KamatelaUser, isVideo: boolean) => void;
   onOpenProductDetail?: (productId: string) => void;
+  isBlocked?: boolean;
+  onBlockUser?: (userId: string, reason?: string) => void;
+  onUnblockUser?: (userId: string) => void;
+  onReportUser?: (userId: string, reason: string, details?: string, shouldBlock?: boolean) => void;
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = ({
@@ -46,11 +59,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   onStartCall,
   onSimulateIncomingCall,
   onOpenProductDetail,
+  isBlocked = false,
+  onBlockUser,
+  onUnblockUser,
+  onReportUser,
 }) => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+
+  // WhatsApp Overflow Menu & Safety Modals
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isContactInfoOpen, setIsContactInfoOpen] = useState(false);
+
+  // Block Modal Options
+  const [alsoReportFromBlock, setAlsoReportFromBlock] = useState(false);
+
+  // Report Modal Options
+  const [reportReason, setReportReason] = useState('spam');
+  const [reportDetails, setReportDetails] = useState('');
+  const [alsoBlockFromReport, setAlsoBlockFromReport] = useState(true);
+
+  const reportReasonsList = [
+    { id: 'spam', label: 'Spam or commercial advertising', icon: Ban },
+    { id: 'harassment', label: 'Harassment, hate speech or threats', icon: AlertTriangle },
+    { id: 'fraud', label: 'Scam, phishing or financial fraud', icon: ShieldAlert },
+    { id: 'impersonation', label: 'Fake account or impersonation', icon: UserX },
+    { id: 'inappropriate', label: 'Inappropriate or harmful content', icon: Flag },
+  ];
 
   const handleTogglePlaySong = (song: { id: string; title: string; genre: string }) => {
     if (playingSongId === song.id) {
@@ -259,12 +298,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           <Button
             size="sm"
             variant="ghost"
+            disabled={isBlocked}
             onClick={() => {
+              if (isBlocked) {
+                toast.error('You blocked this contact. Unblock to make voice calls.');
+                return;
+              }
               soundEffects.unlock();
               onStartCall(chat.participant, false);
             }}
-            className="h-8 w-8 p-0 text-foreground hover:text-emerald-500 rounded-full"
-            title="Real WhatsApp Voice Call"
+            className={`h-8 w-8 p-0 rounded-full ${
+              isBlocked ? 'opacity-40 cursor-not-allowed' : 'text-foreground hover:text-emerald-500'
+            }`}
+            title={isBlocked ? 'Contact is blocked' : 'Real WhatsApp Voice Call'}
           >
             <Phone className="w-4 h-4" />
           </Button>
@@ -272,29 +318,131 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           <Button
             size="sm"
             variant="ghost"
+            disabled={isBlocked}
             onClick={() => {
+              if (isBlocked) {
+                toast.error('You blocked this contact. Unblock to make video calls.');
+                return;
+              }
               soundEffects.unlock();
               onStartCall(chat.participant, true);
             }}
-            className="h-8 w-8 p-0 text-foreground hover:text-emerald-500 rounded-full"
-            title="Real WhatsApp Video Call"
+            className={`h-8 w-8 p-0 rounded-full ${
+              isBlocked ? 'opacity-40 cursor-not-allowed' : 'text-foreground hover:text-emerald-500'
+            }`}
+            title={isBlocked ? 'Contact is blocked' : 'Real WhatsApp Video Call'}
           >
             <Video className="w-4 h-4" />
           </Button>
 
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              toast.info('Chat options: Mute, Clear history, Search in chat');
-            }}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground rounded-full"
-            title="Chat Options"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+          {/* Three-dot WhatsApp Chat Overflow Menu */}
+          <div className="relative">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground rounded-full"
+              title="Chat Options"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </Button>
+
+            {isMenuOpen && (
+              <div
+                className="absolute right-0 top-10 w-52 rounded-2xl bg-card border border-border shadow-2xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsContactInfoOpen(true)}
+                  className="w-full px-3.5 py-2 text-left flex items-center gap-2 hover:bg-muted/70 text-foreground transition-colors"
+                >
+                  <User className="w-4 h-4 text-emerald-400" />
+                  <span>View Contact</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.info('Notifications muted for 8 hours');
+                  }}
+                  className="w-full px-3.5 py-2 text-left flex items-center gap-2 hover:bg-muted/70 text-foreground transition-colors"
+                >
+                  <BellOff className="w-4 h-4 text-muted-foreground" />
+                  <span>Mute Notifications</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.success('Chat history cleared locally');
+                  }}
+                  className="w-full px-3.5 py-2 text-left flex items-center gap-2 hover:bg-muted/70 text-foreground transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 text-muted-foreground" />
+                  <span>Clear Chat</span>
+                </button>
+
+                <div className="h-px bg-border/60 my-1" />
+
+                <button
+                  type="button"
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="w-full px-3.5 py-2 text-left flex items-center gap-2 hover:bg-rose-500/10 text-rose-400 transition-colors font-medium"
+                >
+                  <Flag className="w-4 h-4 text-rose-400" />
+                  <span>Report Contact</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isBlocked) {
+                      onUnblockUser?.(chat.participant.id);
+                      toast.success(`Unblocked ${chat.participant.name}`);
+                    } else {
+                      setIsBlockModalOpen(true);
+                    }
+                  }}
+                  className="w-full px-3.5 py-2 text-left flex items-center gap-2 hover:bg-rose-500/10 text-rose-500 transition-colors font-bold"
+                >
+                  {isBlocked ? (
+                    <>
+                      <UserCheck className="w-4 h-4 text-emerald-400" />
+                      <span className="text-emerald-400">Unblock Contact</span>
+                    </>
+                  ) : (
+                    <>
+                      <Ban className="w-4 h-4 text-rose-500" />
+                      <span>Block Contact</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* WhatsApp Blocked Warning Banner */}
+      {isBlocked && (
+        <div className="px-4 py-2.5 bg-rose-500/15 border-b border-rose-500/30 flex items-center justify-between text-xs text-rose-300">
+          <div className="flex items-center gap-2">
+            <Ban className="w-4 h-4 text-rose-400 shrink-0" />
+            <span className="font-medium">You blocked this contact. Calls and messages are paused.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onUnblockUser?.(chat.participant.id);
+              toast.success(`Unblocked ${chat.participant.name}`);
+            }}
+            className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white font-bold text-[11px] hover:bg-rose-600 transition-colors"
+          >
+            Unblock
+          </button>
+        </div>
+      )}
 
       {/* Messages Scroll Area with WhatsApp pattern background */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] bg-background/50">
@@ -467,8 +615,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input Bar / Real Voice Recorder Bar */}
-      {isRecording ? (
+      {/* Message Input Bar / Real Voice Recorder Bar / Blocked State */}
+      {isBlocked ? (
+        <div className="p-3 bg-muted/40 border-t border-border flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <Ban className="w-4 h-4 text-rose-400 shrink-0" />
+            <span className="truncate">You cannot send messages to a blocked contact.</span>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              onUnblockUser?.(chat.participant.id);
+              toast.success(`Unblocked ${chat.participant.name}`);
+            }}
+            className="h-8 px-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shrink-0 shadow-sm"
+          >
+            Unblock
+          </Button>
+        </div>
+      ) : isRecording ? (
         <div className="p-2.5 bg-card border-t border-border flex items-center justify-between gap-2 shrink-0 animate-in fade-in">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping shrink-0" />
@@ -538,6 +704,269 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             <Send className="w-4 h-4" />
           </Button>
         </form>
+      )}
+
+      {/* WhatsApp Block Contact Confirmation Dialog */}
+      {isBlockModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-5 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-500 flex items-center justify-center shrink-0">
+                <Ban className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Block {chat.participant.name}?
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  WhatsApp Contact Protection
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Blocked contacts will no longer be able to call you or send you messages. This contact will not be notified that they have been blocked.
+            </p>
+
+            <label className="flex items-start gap-2.5 p-3 rounded-2xl bg-muted/30 border border-border/60 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={alsoReportFromBlock}
+                onChange={(e) => setAlsoReportFromBlock(e.target.checked)}
+                className="mt-0.5 rounded border-border text-emerald-500 focus:ring-emerald-500"
+              />
+              <div className="text-xs">
+                <span className="font-semibold text-foreground">Report contact to KAMATELA</span>
+                <p className="text-[10px] text-muted-foreground">The last 5 messages from this chat will be forwarded for safety review.</p>
+              </div>
+            </label>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsBlockModalOpen(false)}
+                className="rounded-xl text-xs h-9 px-4"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  onBlockUser?.(chat.participant.id, 'User blocked in chat');
+                  if (alsoReportFromBlock) {
+                    onReportUser?.(
+                      chat.participant.id,
+                      'User reported and blocked',
+                      'Blocked from 1-on-1 chat room',
+                      true
+                    );
+                  }
+                  toast.success(`Blocked ${chat.participant.name}`);
+                  setIsBlockModalOpen(false);
+                }}
+                className="rounded-xl text-xs h-9 px-4 bg-rose-600 hover:bg-rose-500 text-white font-bold"
+              >
+                Block Contact
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Report Contact Dialog */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-card border border-border p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                  <Flag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Report {chat.participant.name}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Help keep the KAMATELA community safe
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsReportModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Select the reason why you are reporting this contact. The last 5 messages from this chat will be forwarded to our review team:
+            </p>
+
+            <div className="space-y-2">
+              {reportReasonsList.map((reason) => {
+                const Icon = reason.icon;
+                const isSelected = reportReason === reason.id;
+                return (
+                  <button
+                    key={reason.id}
+                    type="button"
+                    onClick={() => setReportReason(reason.id)}
+                    className={`w-full p-2.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
+                      isSelected
+                        ? 'bg-amber-500/15 border-amber-500/50 text-foreground'
+                        : 'bg-muted/20 border-border hover:bg-muted/40 text-muted-foreground'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-amber-400' : 'text-muted-foreground'}`} />
+                    <span className="text-xs font-medium flex-1">{reason.label}</span>
+                    <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center text-[9px] ${
+                      isSelected ? 'border-amber-400 bg-amber-400 text-black font-bold' : 'border-muted-foreground'
+                    }`}>
+                      {isSelected ? '✓' : ''}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                Additional Comments (Optional)
+              </label>
+              <textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Describe what happened..."
+                rows={2}
+                className="w-full text-xs p-2.5 rounded-xl bg-muted/40 border border-border focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 p-2.5 rounded-2xl bg-muted/30 border border-border/60 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={alsoBlockFromReport}
+                onChange={(e) => setAlsoBlockFromReport(e.target.checked)}
+                className="rounded border-border text-emerald-500 focus:ring-emerald-500"
+              />
+              <span className="text-xs font-semibold text-foreground">Block contact and stop receiving messages</span>
+            </label>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsReportModalOpen(false)}
+                className="rounded-xl text-xs h-9 px-4"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  onReportUser?.(
+                    chat.participant.id,
+                    reportReason,
+                    reportDetails.trim() || undefined,
+                    alsoBlockFromReport
+                  );
+                  toast.success(`Report submitted. Thank you for making KAMATELA safer!`);
+                  if (alsoBlockFromReport) {
+                    toast.info(`Blocked ${chat.participant.name}`);
+                  }
+                  setIsReportModalOpen(false);
+                  setReportDetails('');
+                }}
+                className="rounded-xl text-xs h-9 px-4 bg-amber-600 hover:bg-amber-500 text-white font-bold"
+              >
+                Submit Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Contact Info Modal */}
+      {isContactInfoOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground">Contact Info</h3>
+              <button
+                type="button"
+                onClick={() => setIsContactInfoOpen(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center text-center space-y-2">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-500 shadow-md">
+                <img src={chat.participant.avatar} alt={chat.participant.name} className="w-full h-full object-cover" />
+              </div>
+              <h4 className="text-sm font-bold text-foreground">{chat.participant.name}</h4>
+              <p className="text-xs text-muted-foreground font-mono">{chat.participant.businessPhone || chat.participant.handle}</p>
+              <p className="text-xs text-foreground/80 italic max-w-xs">"{chat.participant.bio || 'Hey there! I am using KAMATELA.'}"</p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-muted/30 border border-border/50 text-xs space-y-1">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Account Type</span>
+                <span className="font-bold text-foreground">{chat.participant.isBusiness ? 'Business Account' : 'Standard Account'}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Status</span>
+                <span className="font-bold text-emerald-400">Online & Encrypted</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsContactInfoOpen(false);
+                  setIsReportModalOpen(true);
+                }}
+                className="flex-1 rounded-xl text-xs h-9 border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+              >
+                <Flag className="w-3.5 h-3.5 mr-1" /> Report
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsContactInfoOpen(false);
+                  if (isBlocked) {
+                    onUnblockUser?.(chat.participant.id);
+                    toast.success(`Unblocked ${chat.participant.name}`);
+                  } else {
+                    setIsBlockModalOpen(true);
+                  }
+                }}
+                className={`flex-1 rounded-xl text-xs h-9 ${
+                  isBlocked
+                    ? 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10'
+                    : 'border-rose-500/40 text-rose-400 hover:bg-rose-500/10'
+                }`}
+              >
+                {isBlocked ? (
+                  <>
+                    <UserCheck className="w-3.5 h-3.5 mr-1" /> Unblock
+                  </>
+                ) : (
+                  <>
+                    <Ban className="w-3.5 h-3.5 mr-1" /> Block
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -16,11 +16,18 @@ import {
   Plus,
   Check,
   Flame,
+  Mic,
+  MicOff,
+  Video as VideoIcon,
+  VideoOff,
+  RefreshCw,
+  LogOut,
+  UserPlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import type { LiveStreamItem, User, VirtualGift } from '@/types/kamatela';
+import type { LiveStreamItem, User, VirtualGift, LiveStreamCoHost } from '@/types/kamatela';
 import { soundEffects } from '@/utils/audioEffects';
 import { GiftTrayModal } from '@/components/voiceRooms/GiftTrayModal';
 import { CoinTopUpModal } from '@/components/wallet/CoinTopUpModal';
@@ -77,16 +84,171 @@ export const LiveStreamPlayerModal: React.FC<LiveStreamPlayerModalProps> = ({
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [giftBanner, setGiftBanner] = useState<{ icon: string; name: string; sender: string } | null>(null);
 
+  // Dual Live Co-Hosting State
+  const [coHost, setCoHost] = useState<LiveStreamCoHost | null>(stream?.coHost || null);
+  const [isJoinConfirmOpen, setIsJoinConfirmOpen] = useState(false);
+  const [isCoHostMicMuted, setIsCoHostMicMuted] = useState(false);
+  const [isCoHostCameraOff, setIsCoHostCameraOff] = useState(false);
+  const [coHostMediaStream, setCoHostMediaStream] = useState<MediaStream | null>(null);
+  const [hasCoHostCamera, setHasCoHostCamera] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const coHostVideoRef = useRef<HTMLVideoElement | null>(null);
   const commentsEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync likes and viewers on stream open
+  // Sync likes, viewers, and co-host on stream open
   useEffect(() => {
     if (stream) {
       setLikesCount(stream.likesCount || 1200);
       setViewerCount(stream.viewerCount || 950);
+      setCoHost(stream.coHost || null);
     }
   }, [stream]);
+
+  // Clean up guest media stream when closing or leaving co-host
+  useEffect(() => {
+    return () => {
+      if (coHostMediaStream) {
+        coHostMediaStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [coHostMediaStream]);
+
+  const setCoHostVideoRef = (el: HTMLVideoElement | null) => {
+    coHostVideoRef.current = el;
+    if (el && coHostMediaStream) {
+      try {
+        if (el.srcObject !== coHostMediaStream) {
+          el.srcObject = coHostMediaStream;
+        }
+        el.play().catch(() => {});
+      } catch (err) {
+        console.warn('setCoHostVideoRef error:', err);
+      }
+    }
+  };
+
+  // Ensure coHost video element has the stream bound whenever layout shifts
+  useEffect(() => {
+    if (coHostVideoRef.current && coHostMediaStream) {
+      try {
+        if (coHostVideoRef.current.srcObject !== coHostMediaStream) {
+          coHostVideoRef.current.srcObject = coHostMediaStream;
+        }
+        coHostVideoRef.current.play().catch(() => {});
+      } catch (err) {
+        console.warn('coHostVideoRef effect error:', err);
+      }
+    }
+  }, [coHostMediaStream, hasCoHostCamera, coHost]);
+
+  // Start real user camera when joining as co-host
+  const startGuestCamera = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported');
+      }
+
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: true,
+        });
+      } catch {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user' },
+            audio: false,
+          });
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
+      }
+
+      if (stream) {
+        setCoHostMediaStream(stream);
+        setHasCoHostCamera(true);
+        if (coHostVideoRef.current) {
+          coHostVideoRef.current.srcObject = stream;
+          coHostVideoRef.current.play().catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.warn('Camera access denied or not available:', err);
+      setHasCoHostCamera(false);
+    }
+  };
+
+  const handleJoinAsCoHost = async () => {
+    soundEffects.playConnectedChime();
+    const newCoHost: LiveStreamCoHost = {
+      user: currentUser,
+      isMuted: false,
+      isCameraOff: false,
+      joinedAt: Date.now(),
+    };
+    setCoHost(newCoHost);
+    setIsJoinConfirmOpen(false);
+    await startGuestCamera();
+    toast.success(`You are now LIVE with ${stream?.host.name}!`);
+    setComments((prev) => [
+      ...prev,
+      {
+        id: 'cohost_join_' + Date.now(),
+        user: 'System',
+        text: `🎉 ${currentUser.name} joined as Co-Host! Screen switched to Dual Live view.`,
+      },
+    ]);
+  };
+
+  const handleLeaveCoHost = () => {
+    if (coHostMediaStream) {
+      coHostMediaStream.getTracks().forEach((track) => track.stop());
+      setCoHostMediaStream(null);
+    }
+    setHasCoHostCamera(false);
+    setCoHost(null);
+    soundEffects.playHangupBeep();
+    toast.info('You left the co-host session');
+    setComments((prev) => [
+      ...prev,
+      {
+        id: 'cohost_leave_' + Date.now(),
+        user: 'System',
+        text: `${currentUser.name} left the co-host stream.`,
+      },
+    ]);
+  };
+
+  const toggleCoHostMic = () => {
+    setIsCoHostMicMuted((prev) => {
+      const next = !prev;
+      if (coHostMediaStream) {
+        coHostMediaStream.getAudioTracks().forEach((t) => {
+          t.enabled = !next;
+        });
+      }
+      toast.info(next ? 'Microphone muted' : 'Microphone unmuted');
+      return next;
+    });
+  };
+
+  const toggleCoHostCamera = () => {
+    setIsCoHostCameraOff((prev) => {
+      const next = !prev;
+      if (coHostMediaStream) {
+        coHostMediaStream.getVideoTracks().forEach((t) => {
+          t.enabled = !next;
+        });
+      }
+      toast.info(next ? 'Camera turned off' : 'Camera turned on');
+      return next;
+    });
+  };
 
   // Periodic simulated live comments & natural viewer fluctuation
   useEffect(() => {
@@ -220,12 +382,86 @@ export const LiveStreamPlayerModal: React.FC<LiveStreamPlayerModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex items-center justify-center p-0 md:p-3 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md h-full md:h-[92vh] md:max-h-[750px] md:rounded-3xl bg-black overflow-hidden flex flex-col justify-between border border-white/10 shadow-2xl">
-        {/* Background Live Video / Visualizer */}
+        {/* Background Live Video / Split-Screen Dual Live Stage */}
         <div
-          className="absolute inset-0 cursor-pointer overflow-hidden flex items-center justify-center bg-zinc-950"
+          className="absolute inset-0 cursor-pointer overflow-hidden flex flex-col bg-zinc-950"
           onClick={handleTapScreen}
         >
-          {stream.videoUrl ? (
+          {coHost ? (
+            /* Split-Screen Dual Live Video Layout */
+            <div className="relative w-full h-full flex flex-col">
+              {/* TOP PANE: Host Live Feed */}
+              <div className="relative flex-1 w-full bg-zinc-900 overflow-hidden border-b-2 border-emerald-500/40">
+                {stream.videoUrl ? (
+                  <video
+                    ref={videoRef}
+                    src={stream.videoUrl}
+                    autoPlay
+                    loop
+                    playsInline
+                    muted={isMuted}
+                    className="w-full h-full object-cover select-none"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-purple-950/80 to-zinc-900 p-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-emerald-500 shadow-lg animate-pulse">
+                      <img src={stream.thumbnailUrl} alt={stream.title} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="mt-2 text-xs font-bold text-white truncate max-w-[200px]">{stream.host.name} (Host)</span>
+                  </div>
+                )}
+                <div className="absolute top-14 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-bold">{stream.host.name}</span>
+                  <span className="text-emerald-400 text-[9px] font-black uppercase ml-1">HOST</span>
+                </div>
+              </div>
+
+              {/* CENTER DIVIDER: Duo Live Badge */}
+              <div className="relative z-20 flex items-center justify-center -my-3 pointer-events-none">
+                <div className="px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xl flex items-center gap-1.5 border border-white/20">
+                  <Users className="w-3 h-3 animate-pulse" />
+                  <span>DUO LIVE BROADCAST</span>
+                </div>
+              </div>
+
+              {/* BOTTOM PANE: Co-Host Live Feed */}
+              <div className="relative flex-1 w-full bg-zinc-950 overflow-hidden">
+                {coHost.user.id === currentUser.id && hasCoHostCamera && !isCoHostCameraOff ? (
+                  <video
+                    ref={setCoHostVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover select-none scale-x-[-1]"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-t from-cyan-950/80 to-zinc-900 p-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-cyan-400 shadow-lg animate-pulse">
+                      <img src={coHost.user.avatar} alt={coHost.user.name} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="mt-2 text-xs font-bold text-white truncate max-w-[200px]">{coHost.user.name}</span>
+                    <span className="text-[10px] text-cyan-300 font-medium">Guest Co-Host Active</span>
+                  </div>
+                )}
+
+                <div className="absolute top-4 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="font-bold">{coHost.user.name}</span>
+                  <span className="text-cyan-400 text-[9px] font-black uppercase ml-1">CO-HOST</span>
+                  {coHost.user.id === currentUser.id && isCoHostMicMuted && (
+                    <MicOff className="w-3 h-3 text-red-400 ml-1" />
+                  )}
+                </div>
+
+                {coHost.user.id === currentUser.id && isCoHostCameraOff && (
+                  <div className="absolute inset-0 bg-black/80 flex items-center justify-center text-xs text-white/70">
+                    <VideoOff className="w-5 h-5 mr-1 text-red-400" /> Camera Off
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : stream.videoUrl ? (
             <video
               ref={videoRef}
               src={stream.videoUrl}
@@ -390,7 +626,47 @@ export const LiveStreamPlayerModal: React.FC<LiveStreamPlayerModalProps> = ({
             <div ref={commentsEndRef} />
           </div>
 
-          {/* Bottom Control Bar: Chat Input, Mute, Gift Tray, Share, Heart button */}
+          {/* Floating Co-Host Guest Controls (if current user is the co-host) */}
+          {coHost && coHost.user.id === currentUser.id && (
+            <div className="p-2 rounded-2xl bg-black/80 backdrop-blur-xl border border-cyan-500/40 flex items-center justify-between gap-2 shadow-2xl animate-in slide-in-from-bottom-2">
+              <div className="flex items-center gap-1.5 text-xs text-cyan-300 font-bold px-1">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <span>You are Live Co-Host</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={toggleCoHostMic}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    isCoHostMicMuted ? 'bg-red-500/80 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                  title={isCoHostMicMuted ? 'Unmute Mic' : 'Mute Mic'}
+                >
+                  {isCoHostMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleCoHostCamera}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    isCoHostCameraOff ? 'bg-red-500/80 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                  title={isCoHostCameraOff ? 'Turn Camera On' : 'Turn Camera Off'}
+                >
+                  {isCoHostCameraOff ? <VideoOff className="w-4 h-4" /> : <VideoIcon className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLeaveCoHost}
+                  className="px-2.5 py-1 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-md"
+                  title="Leave Co-Host"
+                >
+                  <LogOut className="w-3.5 h-3.5" /> Leave
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Control Bar: Chat Input, Join Co-Host, Mute, Gift Tray, Share, Heart button */}
           <div className="flex items-center gap-2 pt-1">
             <form onSubmit={handleSendMessage} className="flex-1 flex items-center relative">
               <Input
@@ -407,6 +683,29 @@ export const LiveStreamPlayerModal: React.FC<LiveStreamPlayerModalProps> = ({
                 <Send className="w-3 h-3" />
               </button>
             </form>
+
+            {/* Go Live Together / Request Co-Host Button (if user is viewer) */}
+            {(!coHost || coHost.user.id !== currentUser.id) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (coHost) {
+                    toast.info(`A co-host (${coHost.user.name}) is currently on stage.`);
+                  } else {
+                    setIsJoinConfirmOpen(true);
+                  }
+                }}
+                className={`h-9 px-2.5 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all shrink-0 shadow-lg ${
+                  coHost
+                    ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:opacity-95 animate-pulse'
+                }`}
+                title="Go Live Together with Host"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Co-Host</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -470,6 +769,59 @@ export const LiveStreamPlayerModal: React.FC<LiveStreamPlayerModalProps> = ({
             setIsGiftTrayOpen(true);
           }}
         />
+
+        {/* Go Live Together / Co-Host Confirmation Modal */}
+        {isJoinConfirmOpen && (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+            <div className="w-full max-w-sm rounded-3xl bg-zinc-950 border border-white/20 p-5 shadow-2xl space-y-4 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 text-white flex items-center justify-center shadow-lg">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    Go Live Together?
+                  </h3>
+                  <p className="text-[11px] text-zinc-400">
+                    Dual Split-Screen Broadcast
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-xs text-zinc-300 space-y-2 leading-relaxed">
+                <p>
+                  You are about to join <span className="font-bold text-emerald-400">{stream.host.name}</span> on stage in a synchronized split-screen video feed.
+                </p>
+                <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Your camera and microphone will be activated</span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>You can mute or leave the co-host session anytime</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsJoinConfirmOpen(false)}
+                  className="rounded-xl text-xs h-9 px-4 text-zinc-400 hover:text-white hover:bg-white/10"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleJoinAsCoHost}
+                  className="rounded-xl text-xs h-9 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold shadow-lg"
+                >
+                  Join Live Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

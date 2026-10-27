@@ -295,7 +295,7 @@ export const initialChats: ChatConversation[] = [
       {
         id: 'm2',
         senderId: 'user_me',
-        text: 'Hi! I saw the TikTok video showcasing the Titanium Studio headphones. Are they compatible with multi-device Bluetooth 5.4?',
+        text: 'Hi! I saw the showcase video of the Titanium Studio headphones. Are they compatible with multi-device Bluetooth 5.4?',
         timestamp: 'Yesterday 3:20 PM',
         status: 'read',
       },
@@ -457,6 +457,7 @@ export const initialMusicTracks: AIMusicTrack[] = [
     genre: 'Afrobeats',
     mood: 'Upbeat',
     isInstrumental: false,
+    vocalStyle: 'female_afropop',
     lyrics: `[Verse 1]
 Walking down the island shore
 Feel the heat, wanting more
@@ -487,6 +488,7 @@ Feel the sound come alive`,
     genre: 'Lo-Fi Chill',
     mood: 'Chill',
     isInstrumental: true,
+    vocalStyle: 'instrumental',
     lyrics: `[Instrumental Beat with Vinyl Textures & Warm Piano Chords]`,
     coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80',
     durationSeconds: 178,
@@ -503,6 +505,7 @@ Feel the sound come alive`,
     genre: 'Amapiano',
     mood: 'Energetic',
     isInstrumental: false,
+    vocalStyle: 'male_soul',
     lyrics: `[Verse 1]
 Bass is bumping in the street
 Log drums driving all the feet
@@ -513,13 +516,16 @@ Take control, reach the goal
 Amapiano in the air
 Music healing everywhere
 Kamatela, let it play
-Till the dawning of the day`,
+Dancing all our blues away!
+
+[Outro]
+Kinshasa to the world!`,
     coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=80',
-    durationSeconds: 195,
+    durationSeconds: 165,
     createdAt: '3d ago',
     creator: mockUsers.marcus,
-    playsCount: 42100,
-    likesCount: 11200,
+    playsCount: 39500,
+    likesCount: 9420,
     isLiked: false,
   },
 ];
@@ -1322,6 +1328,7 @@ export function useKamatelaStore() {
     genre: string;
     mood: string;
     isInstrumental: boolean;
+    vocalStyle?: AIMusicTrack['vocalStyle'];
     lyrics?: string;
   }): AIMusicTrack => {
     const trackId = 'ai_track_' + Date.now();
@@ -1363,6 +1370,7 @@ Fade out on the harmony...`;
       genre: params.genre,
       mood: params.mood,
       isInstrumental: params.isInstrumental,
+      vocalStyle: params.vocalStyle || (params.isInstrumental ? 'instrumental' : 'female_afropop'),
       lyrics: params.lyrics?.trim() || fallbackLyrics,
       coverUrl: randomCover,
       durationSeconds: Math.floor(Math.random() * 40 + 140),
@@ -1554,6 +1562,82 @@ Fade out on the harmony...`;
   };
 
   // Unified Single Sign-On (SSO) authentication & persistent session management
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_PREFIX + 'blocked_user_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [reportedRecords, setReportedRecords] = useState<
+    Array<{ userId: string; reason: string; details?: string; timestamp: number }>
+  >(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_PREFIX + 'reported_records');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const blockUser = (userId: string, reason?: string) => {
+    setBlockedUserIds((prev) => {
+      if (prev.includes(userId)) return prev;
+      const updated = [...prev, userId];
+      try {
+        localStorage.setItem(STORAGE_PREFIX + 'blocked_user_ids', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const unblockUser = (userId: string) => {
+    setBlockedUserIds((prev) => {
+      const updated = prev.filter((id) => id !== userId);
+      try {
+        localStorage.setItem(STORAGE_PREFIX + 'blocked_user_ids', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const isUserBlocked = (userId: string) => {
+    return blockedUserIds.includes(userId);
+  };
+
+  const reportUser = (
+    userId: string,
+    reason: string,
+    details?: string,
+    shouldBlock: boolean = false
+  ) => {
+    const newRecord = {
+      userId,
+      reason,
+      details,
+      timestamp: Date.now(),
+    };
+    setReportedRecords((prev) => {
+      const updated = [newRecord, ...prev];
+      try {
+        localStorage.setItem(STORAGE_PREFIX + 'reported_records', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+
+    if (shouldBlock) {
+      blockUser(userId, reason);
+    }
+  };
+
   const login = (newUser: User, token?: string) => {
     setUser(newUser);
     setIsAuthenticated(true);
@@ -1588,6 +1672,12 @@ Fade out on the harmony...`;
     login,
     logout,
     switchAccount,
+    blockedUserIds,
+    blockUser,
+    unblockUser,
+    isUserBlocked,
+    reportUser,
+    reportedRecords,
     transactions,
     addTransaction,
     deductCoins,

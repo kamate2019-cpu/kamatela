@@ -128,7 +128,7 @@ export const PwaInstallPrompt: React.FC = () => {
               Install KAMATELA on {isIOS ? 'iOS (iPhone / iPad)' : 'Android / Desktop'}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Enjoy fullscreen TikTok feeds, instant WhatsApp chats, and fast shopping with zero app store downloads.
+              Enjoy fullscreen video feeds, instant messaging, and fast shopping with zero app store downloads.
             </DialogDescription>
           </DialogHeader>
 

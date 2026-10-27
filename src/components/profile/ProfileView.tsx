@@ -88,14 +88,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   return (
     <div className="w-full max-w-md md:max-w-4xl mx-auto space-y-4">
-      {/* Profile Header (TikTok + WhatsApp unified format) */}
+      {/* Profile Header (KAMATELA unified format) */}
       <div className="bg-card rounded-2xl border border-border p-4 md:p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-          {/* Avatar with Status ring */}
-          <div className="relative">
+          {/* Avatar with Status ring & Camera edit trigger */}
+          <div
+            className="relative cursor-pointer group"
+            onClick={() => setIsEditOpen(true)}
+            title="Click to edit profile picture"
+          >
             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-1 bg-gradient-to-tr from-emerald-500 via-cyan-400 to-purple-500 overflow-hidden shadow-lg">
-              <div className="w-full h-full rounded-full overflow-hidden border-2 border-background">
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              <div className="w-full h-full rounded-full overflow-hidden border-2 border-background relative bg-muted">
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    // Fallback to placeholder if url fails
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80';
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                  <Edit3 className="w-5 h-5" />
+                </div>
               </div>
             </div>
             {user.verified && (
@@ -170,7 +185,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
         </div>
 
-        {/* Stats Bar (TikTok style) */}
+        {/* Stats Bar */}
         <div className="grid grid-cols-3 divide-x divide-border pt-3 border-t border-border/70 text-center">
           <div>
             <span className="font-extrabold text-sm md:text-base text-foreground block">

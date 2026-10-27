@@ -17,7 +17,7 @@ import { VoiceRoomsFeed } from '@/components/voiceRooms/VoiceRoomsFeed';
 import { CreateVoiceRoomModal } from '@/components/voiceRooms/CreateVoiceRoomModal';
 import { LiveVoiceRoomModal } from '@/components/voiceRooms/LiveVoiceRoomModal';
 import { IncomingCallModal } from './IncomingCallModal';
-import { ContactSyncModal } from './ContactSyncModal';
+import { WhatsAppContactsModal } from './WhatsAppContactsModal';
 import { ContactQRModal } from './ContactQRModal';
 import { MessageSquare, PhoneCall, Radio, Smartphone, QrCode } from 'lucide-react';
 
@@ -43,6 +43,10 @@ interface ChatModuleProps {
   musicTracks?: AIMusicTrack[];
   onDeductCoins?: (amount: number) => boolean;
   onAddCoins?: (amount: number, channel?: string) => void;
+  blockedUserIds?: string[];
+  onBlockUser?: (userId: string, reason?: string) => void;
+  onUnblockUser?: (userId: string) => void;
+  onReportUser?: (userId: string, reason: string, details?: string, shouldBlock?: boolean) => void;
   onSaveCallMemoToChat?: (
     partnerId: string,
     memo: {
@@ -76,6 +80,10 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
   musicTracks,
   onDeductCoins,
   onAddCoins,
+  blockedUserIds = [],
+  onBlockUser,
+  onUnblockUser,
+  onReportUser,
   onSaveCallMemoToChat,
 }) => {
   const [subTab, setSubTab] = useState<'chats' | 'voice_rooms' | 'calls'>('chats');
@@ -228,6 +236,10 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
           onStartCall={handleStartCall}
           onSimulateIncomingCall={handleSimulateIncomingCall}
           onOpenProductDetail={onOpenProductDetail}
+          isBlocked={blockedUserIds.includes(activeChat.participant.id)}
+          onBlockUser={onBlockUser}
+          onUnblockUser={onUnblockUser}
+          onReportUser={onReportUser}
         />
       ) : subTab === 'chats' ? (
         <div className="h-[calc(100vh-14rem)] md:h-[620px]">
@@ -326,11 +338,14 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
         onDemoteSpeaker={onDemoteVoiceParticipant}
       />
 
-      {/* Phone Contact Sync & Friends Matching Modal */}
-      <ContactSyncModal
+      {/* WhatsApp Contacts Directory & Manager Modal */}
+      <WhatsAppContactsModal
         isOpen={isSyncModalOpen}
         onClose={() => setIsSyncModalOpen(false)}
         currentUser={currentUser}
+        blockedUserIds={blockedUserIds}
+        onBlockUser={onBlockUser}
+        onUnblockUser={onUnblockUser}
         onOpenQR={() => {
           setIsSyncModalOpen(false);
           setQrModalTab('scan');
@@ -343,13 +358,13 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
           } else {
             onSendMessage(
               targetUser.id,
-              `👋 Hello ${targetUser.name}! Found you via phone contacts on KAMATELA.`
+              `👋 Hello ${targetUser.name}! Starting chat on KAMATELA.`
             );
             setActiveChatId(targetUser.id);
           }
         }}
-        onStartCallWithUser={(targetUser) => {
-          handleStartCall(targetUser, false);
+        onStartCallWithUser={(targetUser, isVideo) => {
+          handleStartCall(targetUser, !!isVideo);
         }}
       />
 

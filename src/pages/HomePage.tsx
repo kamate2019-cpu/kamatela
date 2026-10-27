@@ -54,6 +54,10 @@ export const HomePage: React.FC = () => {
     callLogs,
     voiceRooms,
     musicTracks,
+    blockedUserIds,
+    blockUser,
+    unblockUser,
+    reportUser,
     addCallLog,
     clearCallLogs,
     createVoiceRoom,
@@ -186,6 +190,10 @@ export const HomePage: React.FC = () => {
             onDemoteVoiceParticipant={demoteParticipant}
             onSaveCallMemoToChat={addCallMemoToChat}
             initialChatId={activeChatTargetId}
+            blockedUserIds={blockedUserIds}
+            onBlockUser={blockUser}
+            onUnblockUser={unblockUser}
+            onReportUser={reportUser}
             onOpenProductDetail={(prodId) => {
               const p = products.find((item) => item.id === prodId);
               if (p) setSelectedProduct(p);
@@ -364,7 +372,6 @@ export const HomePage: React.FC = () => {
         onClose={() => setIsBroadcastModalOpen(false)}
         onStartStream={(stream) => {
           addLiveStream(stream);
-          setSelectedLiveStream(stream);
         }}
       />
     </div>

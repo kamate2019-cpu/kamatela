@@ -193,7 +193,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         </button>
       </div>
 
-      {/* Right Sidebar: TikTok Interaction Buttons */}
+      {/* Right Sidebar: Interaction Buttons */}
       <div
         className="absolute right-2.5 bottom-16 z-20 flex flex-col items-center gap-4 pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
@@ -331,7 +331,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         className="absolute left-3 right-16 bottom-3 z-10 flex flex-col gap-2 pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Linked Business Product Badge (TikTok Shop style!) */}
+        {/* Linked Business Product Badge */}
         {video.linkedProduct && (
           <div
             onClick={() => onOpenBusinessProduct?.(video.linkedProduct!, video.creator)}

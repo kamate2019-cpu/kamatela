@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Bell, PlusCircle, Smartphone, BadgeCheck, Wifi, WifiOff, Signal, LogIn, UserPlus, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { KamatelaLogo } from './KamatelaLogo';
 import type { TabType, User } from '@/types/kamatela';
 import { networkService } from '@/utils/networkService';
 
@@ -79,12 +80,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       <div className="max-w-md md:max-w-4xl mx-auto px-3 md:px-6 h-14 flex items-center justify-between gap-2">
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-primary/30 shadow-sm bg-card flex items-center justify-center">
-            <img src="/icons/icon-192.svg" alt="KAMATELA" className="w-full h-full object-cover" />
-          </div>
+          <KamatelaLogo size={34} animated={true} />
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="font-black text-base tracking-wider bg-gradient-to-r from-emerald-400 via-cyan-300 to-purple-400 bg-clip-text text-transparent">
                 KAMATELA
               </span>
               {currentUser.isBusiness && (
@@ -214,15 +213,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </Button>
           </div>
 
-          {/* User Avatar Account Switcher Trigger */}
+          {/* User Avatar Account Trigger */}
           <button
             type="button"
-            onClick={() => onOpenAuthModal?.('switch')}
+            onClick={() => onOpenAuthModal?.('login')}
             className="flex items-center gap-1.5 p-0.5 rounded-full hover:bg-muted/60 transition-all border border-border/70 hover:border-emerald-500/50"
-            title="Account Menu - Click to Switch Profiles or Sign Out"
+            title="My Account - Profile & Settings"
           >
-            <div className="relative w-8 h-8 rounded-full overflow-hidden border border-emerald-500/40 shrink-0">
-              <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+            <div className="relative w-8 h-8 rounded-full overflow-hidden border border-emerald-500/40 shrink-0 bg-muted">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+                }}
+              />
               <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 border border-background shadow-sm" />
             </div>
             <span className="hidden xl:inline text-[11px] font-bold text-foreground truncate max-w-[80px] pl-0.5 pr-1.5">

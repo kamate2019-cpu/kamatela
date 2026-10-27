@@ -81,7 +81,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <Plus className="w-5 h-5 text-emerald-400" /> Add Product or Service
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            List items in your WhatsApp business catalog and link them in TikTok stream videos.
+            List items in your business catalog and feature them in short videos and live streams.
           </DialogDescription>
         </DialogHeader>
 

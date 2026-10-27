@@ -197,6 +197,14 @@ export interface LiveComment {
   isHost?: boolean;
 }
 
+export interface LiveStreamCoHost {
+  user: User;
+  isMuted?: boolean;
+  isCameraOff?: boolean;
+  videoUrl?: string;
+  joinedAt?: number;
+}
+
 export interface LiveStreamItem {
   id: string;
   title: string;
@@ -210,6 +218,8 @@ export interface LiveStreamItem {
   startedAt: string;
   tags?: string[];
   likesCount?: number;
+  coHost?: LiveStreamCoHost | null;
+  pendingCoHostRequests?: Array<{ user: User; requestedAt: number }>;
 }
 
 export interface AIMusicTrack {
@@ -219,6 +229,7 @@ export interface AIMusicTrack {
   genre: string;
   mood: string;
   isInstrumental: boolean;
+  vocalStyle?: 'female_afropop' | 'male_soul' | 'autotune_trap' | 'acoustic' | 'choir' | 'instrumental';
   lyrics?: string;
   audioUrl?: string;
   coverUrl: string;

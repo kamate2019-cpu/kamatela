@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import type { User, LiveStreamItem } from '@/types/kamatela';
+import type { User, LiveStreamItem, LiveStreamCoHost } from '@/types/kamatela';
 import { soundEffects } from '@/utils/audioEffects';
 
 interface LiveBroadcastHostModalProps {
@@ -49,6 +49,69 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
   const [likesCount, setLikesCount] = useState(0);
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [hasCameraAccess, setHasCameraAccess] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  // Dual Live Co-Hosting State
+  const [coHost, setCoHost] = useState<LiveStreamCoHost | null>(null);
+  const [isCoHostDrawerOpen, setIsCoHostDrawerOpen] = useState(false);
+
+  const ACTIVE_VIEWERS: User[] = [
+    {
+      id: 'v_elena',
+      name: 'Elena Rostova',
+      handle: '@elena_live',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      bio: 'Music creator & live enthusiast',
+      isBusiness: false,
+      followersCount: 1420,
+      followingCount: 310,
+      likesCount: 5200,
+      verified: true,
+    },
+    {
+      id: 'v_marcus',
+      name: 'Marcus Vance',
+      handle: '@marcus_v',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      bio: 'Beatmaker & tech streamer',
+      isBusiness: false,
+      followersCount: 890,
+      followingCount: 420,
+      likesCount: 3100,
+    },
+    {
+      id: 'v_chloe',
+      name: 'Chloe Bennett',
+      handle: '@chloeb',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+      bio: 'Digital artist & vocalist',
+      isBusiness: false,
+      followersCount: 2300,
+      followingCount: 512,
+      likesCount: 9400,
+      verified: true,
+    },
+  ];
+
+  const handleInviteCoHost = (guest: User) => {
+    soundEffects.playConnectedChime();
+    const newCoHost: LiveStreamCoHost = {
+      user: guest,
+      isMuted: false,
+      isCameraOff: false,
+      joinedAt: Date.now(),
+    };
+    setCoHost(newCoHost);
+    setIsCoHostDrawerOpen(false);
+    toast.success(`🎉 ${guest.name} joined as Co-Host! Screen switched to Dual Live view.`);
+  };
+
+  const handleDisconnectCoHost = () => {
+    soundEffects.playHangupBeep();
+    setCoHost(null);
+    setIsCoHostDrawerOpen(false);
+    toast.info('Co-host disconnected. Reverted to single broadcast view.');
+  };
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -101,26 +164,92 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
     };
   }, [stage]);
 
+  const attachStreamToVideo = (stream: MediaStream | null) => {
+    if (videoRef.current && stream) {
+      try {
+        if (videoRef.current.srcObject !== stream) {
+          videoRef.current.srcObject = stream;
+        }
+        videoRef.current.play().catch(() => {});
+      } catch (err) {
+        console.warn('attachStreamToVideo error:', err);
+      }
+    }
+  };
+
+  const setVideoRef = (el: HTMLVideoElement | null) => {
+    videoRef.current = el;
+    if (el && mediaStreamRef.current) {
+      try {
+        if (el.srcObject !== mediaStreamRef.current) {
+          el.srcObject = mediaStreamRef.current;
+        }
+        el.play().catch(() => {});
+      } catch (err) {
+        console.warn('setVideoRef error:', err);
+      }
+    }
+  };
+
+  // Re-attach video stream whenever layout/state renders new video elements
+  useEffect(() => {
+    if (hasCameraAccess && mediaStreamRef.current) {
+      attachStreamToVideo(mediaStreamRef.current);
+    }
+  }, [hasCameraAccess, stage, coHost]);
+
   const startCamera = async () => {
     stopCamera();
+    setCameraError(null);
     try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API not supported in this browser');
+      }
+
+      let stream: MediaStream | null = null;
+      // Step 1: Requested facing mode + audio
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode },
           audio: true,
         });
+      } catch (err1) {
+        console.warn('Attempt 1 (video+audio) failed, trying video only:', err1);
+        // Step 2: Video only with facingMode
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode },
+            audio: false,
+          });
+        } catch (err2) {
+          console.warn('Attempt 2 (video facingMode) failed, trying generic video:', err2);
+          // Step 3: Generic video device
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
+      }
+
+      if (stream) {
         mediaStreamRef.current = stream;
         setHasCameraAccess(true);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
+        setCameraError(null);
+        attachStreamToVideo(stream);
+        toast.success('Live Camera connected');
       } else {
         setHasCameraAccess(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Webcam/mic access unavailable, using avatar simulation mode:', err);
       setHasCameraAccess(false);
+      const msg = err?.name === 'NotAllowedError'
+        ? 'Camera permission denied. Please allow camera access in browser settings.'
+        : err?.name === 'NotFoundError'
+        ? 'No camera found on this device.'
+        : 'Camera could not be activated.';
+      setCameraError(msg);
+      toast.info(msg);
     }
   };
 
@@ -132,6 +261,7 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setHasCameraAccess(false);
   };
 
   const handleToggleMic = () => {
@@ -187,10 +317,63 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex items-center justify-center p-0 md:p-3 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md h-full md:h-[92vh] md:max-h-[750px] md:rounded-3xl bg-zinc-950 overflow-hidden flex flex-col justify-between border border-white/10 shadow-2xl text-white">
         {/* Main Video Viewfinder / Avatar Stage */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden">
-          {hasCameraAccess ? (
+        <div className="absolute inset-0 flex flex-col bg-black overflow-hidden">
+          {stage === 'broadcasting' && coHost ? (
+            /* Split-Screen Dual Live View for Host */
+            <div className="relative w-full h-full flex flex-col">
+              {/* TOP PANE: Host's Live Camera Feed */}
+              <div className="relative flex-1 w-full bg-zinc-900 overflow-hidden border-b-2 border-emerald-500/40">
+                {hasCameraAccess ? (
+                  <video
+                    ref={setVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover ${beautyFilter ? 'brightness-105 contrast-105' : ''}`}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-emerald-950 via-zinc-900 to-black p-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-emerald-500 shadow-lg animate-pulse">
+                      <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="mt-2 text-xs font-bold text-white truncate">{currentUser.name} (Host)</span>
+                  </div>
+                )}
+                <div className="absolute top-14 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-bold">You</span>
+                  <span className="text-emerald-400 text-[9px] font-black uppercase ml-1">HOST</span>
+                </div>
+              </div>
+
+              {/* CENTER DIVIDER: Duo Live Badge */}
+              <div className="relative z-20 flex items-center justify-center -my-3 pointer-events-none">
+                <div className="px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xl flex items-center gap-1.5 border border-white/20">
+                  <Users className="w-3 h-3 animate-pulse" />
+                  <span>DUO LIVE BROADCAST</span>
+                </div>
+              </div>
+
+              {/* BOTTOM PANE: Co-Host Live Feed */}
+              <div className="relative flex-1 w-full bg-zinc-950 overflow-hidden">
+                <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-t from-cyan-950/80 to-zinc-900 p-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-cyan-400 shadow-lg animate-pulse">
+                    <img src={coHost.user.avatar} alt={coHost.user.name} className="w-full h-full object-cover" />
+                  </div>
+                  <span className="mt-2 text-xs font-bold text-white truncate max-w-[200px]">{coHost.user.name}</span>
+                  <span className="text-[10px] text-cyan-300 font-medium">Guest Co-Host Live</span>
+                </div>
+
+                <div className="absolute top-4 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="font-bold">{coHost.user.name}</span>
+                  <span className="text-cyan-400 text-[9px] font-black uppercase ml-1">CO-HOST</span>
+                </div>
+              </div>
+            </div>
+          ) : hasCameraAccess ? (
             <video
-              ref={videoRef}
+              ref={setVideoRef}
               autoPlay
               playsInline
               muted
@@ -199,17 +382,25 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
           ) : (
             <div className="relative w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-emerald-950 via-zinc-900 to-black p-6 text-center">
               <div className="relative">
-                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-emerald-500 shadow-2xl animate-pulse">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-emerald-500 shadow-2xl animate-pulse">
                   <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 p-2 rounded-full bg-emerald-500 text-white shadow-lg">
                   <Radio className="w-4 h-4 animate-spin" />
                 </div>
               </div>
-              <p className="mt-4 text-xs font-bold text-emerald-400">Interactive Studio Stage Active</p>
-              <p className="text-[11px] text-zinc-400 mt-1 max-w-xs">
-                (Camera preview simulated if camera permission is pending)
+              <p className="mt-3 text-sm font-bold text-emerald-400">Broadcaster Camera Stage</p>
+              <p className="text-[11px] text-zinc-300 mt-1 max-w-xs">
+                {cameraError || 'Camera permission pending or device not yet activated.'}
               </p>
+              <Button
+                type="button"
+                onClick={startCamera}
+                size="sm"
+                className="mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full gap-1.5 shadow-lg px-4"
+              >
+                <Camera className="w-4 h-4" /> Turn On Camera
+              </Button>
             </div>
           )}
 
@@ -236,9 +427,38 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
                 <span>{viewers} viewers</span>
               </div>
             )}
+
+            {stage === 'broadcasting' && (
+              <button
+                type="button"
+                onClick={() => setIsCoHostDrawerOpen(true)}
+                className={`px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-all shadow-md ${
+                  coHost
+                    ? 'bg-cyan-500/30 text-cyan-300 border-cyan-400/50 animate-pulse'
+                    : 'bg-black/50 text-white border-white/20 hover:bg-black/70'
+                }`}
+                title="Manage Co-Host"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>{coHost ? '1 Co-Host' : '+ Co-Host'}</span>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={hasCameraAccess ? stopCamera : startCamera}
+              className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                hasCameraAccess
+                  ? 'bg-emerald-500/30 text-emerald-300 border-emerald-400/50'
+                  : 'bg-black/50 hover:bg-black/80 text-white border-white/20'
+              }`}
+              title={hasCameraAccess ? 'Turn Off Camera' : 'Turn On Camera'}
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+
             {hasCameraAccess && (
               <button
                 type="button"
@@ -354,6 +574,31 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
               </div>
             </div>
 
+            {/* If Co-Host active, offer quick disconnect button */}
+            {coHost && (
+              <div className="p-2.5 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 backdrop-blur-md flex items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <img
+                    src={coHost.user.avatar}
+                    alt={coHost.user.name}
+                    className="w-7 h-7 rounded-full object-cover border border-cyan-400 shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-bold text-white truncate">{coHost.user.name}</p>
+                    <p className="text-[10px] text-cyan-300">Live on stage with you</p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDisconnectCoHost}
+                  className="h-7 px-2.5 rounded-xl border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/20 text-[11px] font-bold"
+                >
+                  Disconnect
+                </Button>
+              </div>
+            )}
+
             <Button
               onClick={handleEndBroadcast}
               variant="destructive"
@@ -400,6 +645,104 @@ export const LiveBroadcastHostModal: React.FC<LiveBroadcastHostModalProps> = ({
             >
               Close Studio
             </Button>
+          </div>
+        )}
+
+        {/* Live Co-Host Management Modal */}
+        {isCoHostDrawerOpen && (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+            <div className="w-full max-w-sm rounded-3xl bg-zinc-950 border border-white/20 p-5 shadow-2xl space-y-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center border border-cyan-500/30">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Live Co-Host Studio</h3>
+                    <p className="text-[11px] text-zinc-400">Dual Split-Screen Broadcasting</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCoHostDrawerOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {coHost ? (
+                <div className="p-3.5 rounded-2xl bg-cyan-950/50 border border-cyan-500/40 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={coHost.user.avatar}
+                      alt={coHost.user.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-cyan-400 shadow-md"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-white">{coHost.user.name}</span>
+                        <span className="px-1.5 py-0.2 rounded bg-cyan-500/30 text-cyan-300 text-[9px] font-black uppercase">
+                          ACTIVE
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-400">Currently broadcasting split-screen</p>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleDisconnectCoHost}
+                    variant="destructive"
+                    className="w-full h-9 rounded-xl text-xs font-bold gap-1.5"
+                  >
+                    Disconnect Co-Host
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-zinc-400">
+                    <span>Active Viewers in Room</span>
+                    <span className="text-[11px] text-emerald-400">{ACTIVE_VIEWERS.length} Available</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {ACTIVE_VIEWERS.map((viewer) => (
+                      <div
+                        key={viewer.id}
+                        className="p-2.5 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-3 hover:bg-white/10 transition-all"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={viewer.avatar}
+                            alt={viewer.name}
+                            className="w-9 h-9 rounded-full object-cover border border-white/20 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{viewer.name}</p>
+                            <p className="text-[10px] text-emerald-400 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              Watching Live
+                            </p>
+                          </div>
+                        </div>
+
+                        <Button
+                          size="sm"
+                          onClick={() => handleInviteCoHost(viewer)}
+                          className="h-8 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-[11px] shadow-md"
+                        >
+                          Invite
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[10px] text-zinc-400 text-center leading-relaxed">
+                    Invited guests will appear alongside you in a synchronized dual video layout.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

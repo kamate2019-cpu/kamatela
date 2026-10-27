@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kamatela.vercel.app/sitemap.xml
+Host: https://kamatela.vercel.app

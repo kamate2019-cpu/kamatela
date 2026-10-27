@@ -40,7 +40,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   });
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-2xl border border-border overflow-hidden">
+    <div className="flex flex-col h-full bg-card rounded-2xl border border-border overflow-hidden relative">
       {/* Search Bar */}
       <div className="p-3 border-b border-border space-y-2">
         <div className="relative">
@@ -177,6 +177,16 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         )}
       </div>
 
+      {/* Floating WhatsApp Action Button (FAB) for Contacts */}
+      <button
+        type="button"
+        onClick={onOpenSyncContacts || onNewChat}
+        className="absolute bottom-16 right-4 w-12 h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all z-20 group"
+        title="Open WhatsApp Contacts"
+      >
+        <MessageSquarePlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+      </button>
+
       {/* Action Buttons: Sync Contacts, QR Code & New Chat */}
       <div className="p-3 border-t border-border flex items-center justify-between gap-1.5 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-1.5">
@@ -186,7 +196,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             size="sm"
             className="rounded-full gap-1.5 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-semibold h-8"
           >
-            <Smartphone className="w-3.5 h-3.5" /> Contacts
+            <Users className="w-3.5 h-3.5" /> Contacts
           </Button>
           {onOpenQR && (
             <Button
@@ -201,7 +211,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           )}
         </div>
         <Button
-          onClick={onNewChat}
+          onClick={onOpenSyncContacts || onNewChat}
           size="sm"
           className="rounded-full gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md h-8"
         >

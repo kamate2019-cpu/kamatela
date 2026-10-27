@@ -1,42 +1,105 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="kamatelaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Background Outer Glow -->
+    <radialGradient id="bgGlow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#162238" />
+      <stop offset="55%" stop-color="#0c1220" />
+      <stop offset="100%" stop-color="#060911" />
+    </radialGradient>
+
+    <!-- Emerald-Cyan Chat Stream Ribbon (Stem) -->
+    <linearGradient id="emeraldCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#10B981" />
-      <stop offset="45%" stop-color="#06B6D4" />
-      <stop offset="100%" stop-color="#8B5CF6" />
+      <stop offset="45%" stop-color="#06D6A0" />
+      <stop offset="100%" stop-color="#06B6D4" />
     </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#EC4899" />
+
+    <!-- Radiant Violet-Indigo Music Wave (Upper Wing) -->
+    <linearGradient id="violetIndigoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+
+    <!-- Sunset Coral-Amber Rhythm Pulse (Lower Wing) -->
+    <linearGradient id="coralAmberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E" />
+      <stop offset="55%" stop-color="#FB7185" />
       <stop offset="100%" stop-color="#F59E0B" />
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.45" />
+
+    <!-- Glass Refraction Specular Highlight -->
+    <linearGradient id="glassShine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Drop Shadows & Glow Filters -->
+    <filter id="neonBloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="subtleDrop" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.5" />
     </filter>
   </defs>
 
-  <!-- Background container -->
-  <rect width="512" height="512" rx="112" fill="#0D1117" />
-  
-  <!-- Outer glowing ring -->
-  <rect x="16" y="16" width="480" height="480" rx="98" fill="none" stroke="url(#kamatelaGrad)" stroke-width="6" opacity="0.4" />
+  <!-- Squircle Base with Deep Cosmic Obsidian -->
+  <rect x="16" y="16" width="480" height="480" rx="124" fill="url(#bgGlow)" filter="url(#subtleDrop)" />
+  <rect x="18" y="18" width="476" height="476" rx="122" fill="none" stroke="url(#glassShine)" stroke-width="2.5" />
 
-  <!-- Super App Emblem: WhatsApp Chat Bubble merged with TikTok Play note and Business Crown -->
-  <g filter="url(#shadow)">
-    <!-- Chat Bubble Body (WhatsApp style) -->
-    <path d="M140 130 C140 90, 372 90, 372 130 L372 280 C372 320, 310 350, 240 350 L190 395 C180 405, 160 395, 165 375 L175 350 C145 345, 140 320, 140 280 Z" 
-          fill="url(#kamatelaGrad)" />
-    
-    <!-- Video Play triangle & TikTok Music Wave fusion -->
-    <path d="M215 185 L325 245 L215 305 Z" fill="#FFFFFF" />
+  <!-- Ambient Pulsing Glow Rings -->
+  <circle cx="160" cy="240" r="140" fill="#10B981" opacity="0.12" filter="url(#neonBloom)" />
+  <circle cx="340" cy="180" r="120" fill="#8B5CF6" opacity="0.14" filter="url(#neonBloom)" />
+  <circle cx="350" cy="340" r="120" fill="#F43F5E" opacity="0.12" filter="url(#neonBloom)" />
 
-    <!-- Musical/Stream Wave floating badge (TikTok vibe) -->
-    <circle cx="370" cy="150" r="42" fill="url(#accentGrad)" />
-    <path d="M360 136 L360 162 M372 130 L372 168 M384 140 L384 158" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
-
-    <!-- Business Crown / Star Sparkle (Business Hub vibe) -->
-    <polygon points="175,125 182,142 199,142 185,153 190,170 175,160 160,170 165,153 151,142 168,142" fill="#FCD34D" />
+  <!-- Ambient Sound Waves Rings Behind K -->
+  <g opacity="0.25" stroke="#FFFFFF" stroke-width="1.5" fill="none">
+    <ellipse cx="256" cy="256" rx="190" ry="190" stroke-dasharray="4 8" />
+    <ellipse cx="256" cy="256" rx="215" ry="215" stroke-dasharray="2 12" />
   </g>
 
-  <!-- Letter K monogram in playhead -->
-  <text x="256" y="460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="#E2E8F0" text-anchor="middle" letter-spacing="8">KAMATELA</text>
+  <!-- MONOGRAM "K" ICONIC SCULPTURE -->
+  <g filter="url(#subtleDrop)">
+    <!-- 1. LEFT PILLAR: Glowing Chat Pillar with Speech Tail Vertex -->
+    <path d="M128 132 C128 116, 142 104, 158 104 L180 104 C196 104, 210 118, 210 134 L210 376 C210 392, 196 406, 180 406 L158 406 C142 406, 128 392, 128 376 Z" fill="url(#emeraldCyanGrad)" />
+    
+    <!-- WhatsApp-style speech bubble hook at bottom-left -->
+    <path d="M136 348 L104 380 C98 386, 106 396, 114 394 L142 388 Z" fill="url(#emeraldCyanGrad)" />
+
+    <!-- Left Pillar Glass Reflection -->
+    <path d="M136 116 C136 110, 142 106, 150 106 L168 106 C176 106, 182 112, 182 120 L182 390 C182 396, 176 400, 168 400 L150 400 C142 400, 136 396, 136 390 Z" fill="url(#glassShine)" opacity="0.4" />
+
+    <!-- 2. UPPER WING: Soaring Music/Voice Ribbon (Violet-Indigo) -->
+    <path d="M228 274 C218 262, 218 244, 230 232 L320 128 C332 114, 352 112, 366 124 L382 138 C396 150, 396 172, 382 186 L298 272 C286 284, 268 284, 256 274 Z" fill="url(#violetIndigoGrad)" />
+
+    <!-- Upper Wing Specular Light Stripe -->
+    <path d="M246 250 L336 142 C342 134, 354 134, 362 140 L372 150 C380 158, 380 170, 372 178 L288 262 Z" fill="url(#glassShine)" opacity="0.5" />
+
+    <!-- 3. LOWER WING: TikTok/Commerce Energy Wave (Sunset Coral-Amber) -->
+    <path d="M236 248 C248 238, 266 238, 278 250 L374 348 C388 362, 388 384, 374 398 L356 414 C342 426, 320 424, 308 410 L224 300 C212 286, 216 264, 236 248 Z" fill="url(#coralAmberGrad)" />
+
+    <!-- Lower Wing Light Accent -->
+    <path d="M256 264 L348 360 C356 368, 356 380, 348 388 L334 402 C326 410, 314 408, 306 400 L236 312 Z" fill="url(#glassShine)" opacity="0.45" />
+
+    <!-- 4. CENTRAL HARMONY SPARK: Glowing Core Node -->
+    <circle cx="252" cy="260" r="18" fill="#FFFFFF" opacity="0.95" />
+    <circle cx="252" cy="260" r="28" fill="#06D6A0" opacity="0.4" filter="url(#neonBloom)" />
+
+    <!-- Soundwave Equalizer Bars inside Left Pillar -->
+    <g fill="#FFFFFF" opacity="0.85">
+      <rect x="156" y="234" width="4" height="24" rx="2" />
+      <rect x="166" y="222" width="4" height="48" rx="2" />
+      <rect x="176" y="228" width="4" height="36" rx="2" />
+      <rect x="186" y="240" width="4" height="12" rx="2" />
+    </g>
+  </g>
+
+  <!-- Top-Right Luminous Energy Spark -->
+  <g transform="translate(376, 88)">
+    <circle cx="16" cy="16" r="12" fill="#F59E0B" filter="url(#neonBloom)" opacity="0.7" />
+    <path d="M16 2 L20 12 L30 16 L20 20 L16 30 L12 20 L2 16 L12 12 Z" fill="#FFFFFF" />
+  </g>
 </svg>

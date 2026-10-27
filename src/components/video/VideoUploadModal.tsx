@@ -210,7 +210,7 @@ export const VideoUploadModal: React.FC<VideoUploadModalProps> = ({
             />
           </div>
 
-          {/* TikTok Shop integration: Link a Product from Catalog */}
+          {/* Shop integration: Link a Product from Catalog */}
           <div className="space-y-1 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
             <Label className="text-xs font-medium text-amber-400 flex items-center gap-1.5">
               <ShoppingBag className="w-3.5 h-3.5" /> Link a Business Product (In-Stream Shopping)

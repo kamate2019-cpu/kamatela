@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Pause, X, SkipForward, SkipBack, Music, Volume2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { aiMusicSynth, type PlaybackState } from '@/utils/aiMusicSynth';
+import { SoundWaveVisualizer } from './SoundWaveVisualizer';
 import type { AIMusicTrack } from '@/types/kamatela';
 
 interface FloatingAudioPlayerProps {
@@ -33,6 +34,7 @@ export const FloatingAudioPlayer: React.FC<FloatingAudioPlayerProps> = ({
   const { currentTrack, isPlaying } = playback;
 
   const handleTogglePlay = () => {
+    aiMusicSynth.ensureUnlocked().catch(() => {});
     if (isPlaying) {
       aiMusicSynth.pause();
     } else {
@@ -41,6 +43,7 @@ export const FloatingAudioPlayer: React.FC<FloatingAudioPlayerProps> = ({
   };
 
   const handleNext = () => {
+    aiMusicSynth.ensureUnlocked().catch(() => {});
     const currentIdx = tracks.findIndex((t) => t.id === playback.currentTrackId);
     const nextIdx = (currentIdx + 1) % tracks.length;
     const nextTrack = tracks[nextIdx];
@@ -50,6 +53,7 @@ export const FloatingAudioPlayer: React.FC<FloatingAudioPlayerProps> = ({
   };
 
   const handlePrev = () => {
+    aiMusicSynth.ensureUnlocked().catch(() => {});
     const currentIdx = tracks.findIndex((t) => t.id === playback.currentTrackId);
     const prevIdx = (currentIdx - 1 + tracks.length) % tracks.length;
     const prevTrack = tracks[prevIdx];
@@ -87,24 +91,16 @@ export const FloatingAudioPlayer: React.FC<FloatingAudioPlayerProps> = ({
             <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-purple-500/30 text-purple-300">
               {currentTrack.genre}
             </span>
-            {isPlaying && (
-              <div className="flex items-center gap-0.5 h-2">
-                {[40, 85, 50, 95, 60].map((h, i) => (
-                  <div
-                    key={i}
-                    className="w-0.5 bg-purple-400 rounded-full animate-pulse"
-                    style={{
-                      height: `${(h / 100) * 8}px`,
-                      animationDelay: `${i * 100}ms`,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            <SoundWaveVisualizer isPlaying={isPlaying} barCount={8} height={10} colorClass="bg-purple-400" />
           </div>
           <p className="text-xs font-bold text-white truncate leading-tight mt-0.5">
             {currentTrack.title}
           </p>
+          {playback.currentLyricLine && (
+            <p className="text-[10px] text-pink-300 truncate italic mt-0.5 animate-pulse">
+              🎙️ {playback.currentSection ? `${playback.currentSection} ` : ''}{playback.currentLyricLine}
+            </p>
+          )}
         </div>
 
         {/* Player Controls */}
