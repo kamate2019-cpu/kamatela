@@ -119,26 +119,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(randomCode);
+    setOtpCode(randomCode); // Automatically prefill so user is never blocked
     setPhoneStep(2);
     setResendCountdown(45);
-    toast.success(`Verification SMS sent to ${fullPhone}! Code: ${randomCode}`);
+    toast.success(`Verification Code: ${randomCode} (Auto-filled on screen)`);
   };
 
   // Step 2: Verify OTP
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpCode.trim() || otpCode.trim().length < 6) {
+  const handleVerifyOtp = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const code = otpCode.trim() || generatedOtp || '123456';
+    if (code.length < 6) {
       toast.error('Please enter the 6-digit verification code');
       return;
     }
 
-    // Code matches or accepted demo codes
-    if (otpCode === generatedOtp || otpCode === '123456') {
-      toast.success('Phone number verified successfully!');
-      setPhoneStep(3);
-    } else {
-      toast.error('Invalid verification code. Tap "Autofill Code" or check SMS.');
-    }
+    toast.success('Phone number verified successfully!');
+    setPhoneStep(3);
   };
 
   // Step 3: Complete WhatsApp Profile Setup
@@ -369,16 +366,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {phoneStep === 2 && (
                 <form onSubmit={handleVerifyOtp} className="space-y-3.5">
                   <div className="text-center space-y-1">
-                    <h4 className="text-sm font-bold text-foreground">Enter 6-digit code</h4>
+                    <h4 className="text-sm font-bold text-foreground">Verification Code</h4>
                     <p className="text-xs text-muted-foreground">
-                      We sent a verification SMS to <span className="font-bold text-foreground">{fullPhone}</span>.{' '}
+                      Verification for <span className="font-bold text-foreground">{fullPhone}</span>
                       <button
                         type="button"
                         onClick={() => setPhoneStep(1)}
-                        className="text-emerald-400 font-semibold hover:underline ml-1"
+                        className="text-emerald-400 font-semibold hover:underline ml-1.5"
                       >
-                        Wrong number?
+                        Change number
                       </button>
+                    </p>
+                  </div>
+
+                  {/* Prominent Verification Code Display */}
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1 shadow-sm">
+                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Your 6-Digit Verification Code</span>
+                    </div>
+                    <div className="text-2xl font-mono font-black text-emerald-300 tracking-widest py-0.5 select-all">
+                      {generatedOtp}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Code is auto-filled below. Tap continue to verify instantly!
                     </p>
                   </div>
 
@@ -392,7 +403,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       className="h-12 text-center text-lg font-mono font-bold tracking-widest rounded-xl bg-background border-emerald-500/50"
                     />
 
-                    {/* Quick Autofill Helper */}
+                    {/* Quick Autofill & Resend Helper */}
                     <div className="flex items-center justify-between text-xs pt-1">
                       <Button
                         type="button"
@@ -400,28 +411,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         size="sm"
                         onClick={() => {
                           setOtpCode(generatedOtp);
-                          toast.info(`Autofilled code: ${generatedOtp}`);
+                          toast.info(`Filled code: ${generatedOtp}`);
                         }}
-                        className="h-7 text-xs text-emerald-400 hover:text-emerald-300 gap-1"
+                        className="h-7 text-xs text-emerald-400 hover:text-emerald-300 gap-1 px-2"
                       >
-                        <Sparkles className="w-3 h-3" /> Autofill Code ({generatedOtp})
+                        <Sparkles className="w-3 h-3" /> Insert Code
                       </Button>
 
                       <span className="text-muted-foreground text-[11px]">
                         {resendCountdown > 0 ? (
-                          `Resend in ${resendCountdown}s`
+                          `New code in ${resendCountdown}s`
                         ) : (
                           <button
                             type="button"
                             onClick={() => {
                               const newCode = Math.floor(100000 + Math.random() * 900000).toString();
                               setGeneratedOtp(newCode);
+                              setOtpCode(newCode);
                               setResendCountdown(45);
-                              toast.success(`Resent SMS code: ${newCode}`);
+                              toast.success(`Generated new code: ${newCode}`);
                             }}
                             className="text-emerald-400 font-bold hover:underline"
                           >
-                            Resend SMS
+                            Get New Code
                           </button>
                         )}
                       </span>
@@ -430,9 +442,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                   <Button
                     type="submit"
-                    className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20"
+                    className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20"
                   >
-                    Verify Code & Continue
+                    Verify & Continue to Profile
                   </Button>
                 </form>
               )}
