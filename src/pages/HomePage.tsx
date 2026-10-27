@@ -17,6 +17,9 @@ import { MusicStudioView } from '@/components/music/MusicStudioView';
 import { ProductDetailModal } from '@/components/business/ProductDetailModal';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { NetworkMonitorModal } from '@/components/common/NetworkMonitorModal';
+import { LiveStreamPlayerModal } from '@/components/live/LiveStreamPlayerModal';
+import { LiveBroadcastHostModal } from '@/components/live/LiveBroadcastHostModal';
+import type { LiveStreamItem } from '@/types/kamatela';
 
 export const HomePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('feed');
@@ -30,6 +33,8 @@ export const HomePage: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register' | 'switch'>('login');
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
+  const [selectedLiveStream, setSelectedLiveStream] = useState<LiveStreamItem | null>(null);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
 
   const {
     user,
@@ -78,6 +83,8 @@ export const HomePage: React.FC = () => {
     addProduct,
     deleteProduct,
     startOrGetChatWithBusiness,
+    liveStreams,
+    addLiveStream,
   } = useKamatelaStore();
 
   const unreadChatsCount = chats.reduce((acc, c) => acc + c.unreadCount, 0);
@@ -126,6 +133,7 @@ export const HomePage: React.FC = () => {
           setIsAuthModalOpen(true);
         }}
         onOpenNetworkMonitor={() => setIsNetworkModalOpen(true)}
+        onOpenGoLive={() => setIsBroadcastModalOpen(true)}
       />
 
       {/* Main Content Area based on Tab */}
@@ -133,6 +141,10 @@ export const HomePage: React.FC = () => {
         {activeTab === 'feed' && (
           <VideoFeed
             videos={videos}
+            liveStreams={liveStreams}
+            currentUser={user}
+            onSelectLiveStream={(stream) => setSelectedLiveStream(stream)}
+            onGoLive={() => setIsBroadcastModalOpen(true)}
             downloadedVideos={downloadedVideos}
             downloadQuality={downloadQuality}
             onSelectDownloadQuality={setDownloadQuality}
@@ -332,6 +344,28 @@ export const HomePage: React.FC = () => {
       <NetworkMonitorModal
         isOpen={isNetworkModalOpen}
         onClose={() => setIsNetworkModalOpen(false)}
+      />
+
+      {/* Interactive Live Stream Video Player Modal */}
+      <LiveStreamPlayerModal
+        stream={selectedLiveStream}
+        currentUser={user}
+        isOpen={Boolean(selectedLiveStream)}
+        onClose={() => setSelectedLiveStream(null)}
+        onDeductCoins={deductCoins}
+        onAddCoins={addCoins}
+        onOpenProduct={(prod, host) => handleOpenBusinessProduct(prod, host)}
+      />
+
+      {/* Live Host Broadcasting Studio Modal */}
+      <LiveBroadcastHostModal
+        currentUser={user}
+        isOpen={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
+        onStartStream={(stream) => {
+          addLiveStream(stream);
+          setSelectedLiveStream(stream);
+        }}
       />
     </div>
   );

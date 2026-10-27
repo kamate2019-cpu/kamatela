@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Bell, PlusCircle, Smartphone, BadgeCheck, Wifi, WifiOff, Signal, LogIn, UserPlus } from 'lucide-react';
+import { Sparkles, Bell, PlusCircle, Smartphone, BadgeCheck, Wifi, WifiOff, Signal, LogIn, UserPlus, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { TabType, User } from '@/types/kamatela';
@@ -13,6 +13,7 @@ interface AppHeaderProps {
   onOpenTopUp?: () => void;
   onOpenAuthModal?: (mode?: 'login' | 'register' | 'switch') => void;
   onOpenNetworkMonitor?: () => void;
+  onOpenGoLive?: () => void;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -23,6 +24,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   onOpenTopUp,
   onOpenAuthModal,
   onOpenNetworkMonitor,
+  onOpenGoLive,
 }) => {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -138,6 +140,19 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               {(currentUser.coins ?? 500).toLocaleString()}
             </span>
           </button>
+
+          {/* Live Streaming Quick Action Button */}
+          {onOpenGoLive && (
+            <Button
+              size="sm"
+              onClick={onOpenGoLive}
+              className="h-8 px-2 md:px-2.5 text-xs font-bold rounded-full bg-red-600 hover:bg-red-500 text-white gap-1 shadow-sm"
+              title="Watch Live Streams or Go Live"
+            >
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+              <span className="hidden sm:inline">LIVE</span>
+            </Button>
+          )}
 
           {/* Post / Upload Video Action */}
           <Button

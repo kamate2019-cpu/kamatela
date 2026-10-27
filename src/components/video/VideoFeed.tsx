@@ -20,9 +20,16 @@ import type { VideoItem, User, VideoDownloadQuality } from '@/types/kamatela';
 import { VIDEO_QUALITY_OPTIONS } from '@/utils/offlineStorage';
 import { VideoCard } from './VideoCard';
 import { VideoQualityModal } from './VideoQualityModal';
+import { LiveStreamsGrid } from '@/components/live/LiveStreamsGrid';
+import { Radio } from 'lucide-react';
+import type { LiveStreamItem } from '@/types/kamatela';
 
 interface VideoFeedProps {
   videos: VideoItem[];
+  liveStreams?: LiveStreamItem[];
+  currentUser?: User;
+  onSelectLiveStream?: (stream: LiveStreamItem) => void;
+  onGoLive?: () => void;
   downloadedVideos?: VideoItem[];
   downloadQuality?: VideoDownloadQuality;
   onSelectDownloadQuality?: (quality: VideoDownloadQuality) => void;
@@ -39,6 +46,10 @@ interface VideoFeedProps {
 
 export const VideoFeed: React.FC<VideoFeedProps> = ({
   videos,
+  liveStreams = [],
+  currentUser,
+  onSelectLiveStream,
+  onGoLive,
   downloadedVideos = [],
   downloadQuality = '720p',
   onSelectDownloadQuality,
@@ -52,7 +63,7 @@ export const VideoFeed: React.FC<VideoFeedProps> = ({
   onBatchDownloadTopVideos,
   onClearAllFlightVideos,
 }) => {
-  const [feedTab, setFeedTab] = useState<'foryou' | 'following' | 'flight'>('foryou');
+  const [feedTab, setFeedTab] = useState<'foryou' | 'live' | 'following' | 'flight'>('foryou');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isBatchDownloading, setIsBatchDownloading] = useState(false);
   const [isQualityModalOpen, setIsQualityModalOpen] = useState(false);
@@ -164,6 +175,20 @@ export const VideoFeed: React.FC<VideoFeedProps> = ({
             }`}
           >
             For You
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFeedTab('live');
+              setCurrentIndex(0);
+            }}
+            className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 transition-all shrink-0 ${
+              feedTab === 'live'
+                ? 'bg-red-600 text-white shadow-sm'
+                : 'text-red-400 hover:text-red-300'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5 animate-pulse" /> LIVE ({liveStreams.length})
           </button>
           <button
             type="button"
@@ -346,8 +371,15 @@ export const VideoFeed: React.FC<VideoFeedProps> = ({
         </div>
       )}
 
-      {/* Empty States */}
-      {activeVideos.length === 0 ? (
+      {/* If LIVE Tab Active: Show Live Streams Grid */}
+      {feedTab === 'live' ? (
+        <LiveStreamsGrid
+          streams={liveStreams}
+          currentUser={currentUser || videos[0]?.creator}
+          onSelectStream={onSelectLiveStream || (() => {})}
+          onGoLive={onGoLive || (() => {})}
+        />
+      ) : activeVideos.length === 0 ? (
         feedTab === 'flight' ? (
           <div className="flex flex-col items-center justify-center h-[520px] p-6 text-center rounded-3xl border border-dashed border-sky-500/30 bg-sky-500/5">
             <div className="w-16 h-16 rounded-3xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-3">

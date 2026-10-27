@@ -189,6 +189,29 @@ export interface VoiceRoom {
   createdAt: string;
 }
 
+export interface LiveComment {
+  id: string;
+  user: User;
+  text: string;
+  timestamp: string;
+  isHost?: boolean;
+}
+
+export interface LiveStreamItem {
+  id: string;
+  title: string;
+  host: User;
+  viewerCount: number;
+  category: 'Music' | 'Tech' | 'Gaming' | 'Shopping' | 'Talk' | 'Lifestyle';
+  videoUrl?: string;
+  thumbnailUrl: string;
+  isLive: boolean;
+  linkedProduct?: BusinessProduct;
+  startedAt: string;
+  tags?: string[];
+  likesCount?: number;
+}
+
 export interface AIMusicTrack {
   id: string;
   title: string;

@@ -15,7 +15,9 @@ import type {
   VoiceRoomParticipant,
   AIMusicTrack,
   WalletTransaction,
-  VideoDownloadQuality
+  VideoDownloadQuality,
+  LiveStreamItem,
+  LiveComment
 } from '@/types/kamatela';
 
 export const initialTransactions: WalletTransaction[] = [
@@ -614,6 +616,61 @@ export const initialVoiceRooms: VoiceRoom[] = [
   },
 ];
 
+export const initialLiveStreams: LiveStreamItem[] = [
+  {
+    id: 'live_stream_elena',
+    title: '🎧 Live DJ Sunset Session & Suno AI Beats Jam',
+    host: mockUsers.elena,
+    viewerCount: 1420,
+    category: 'Music',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dj-mixing-music-in-a-club-40540-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&auto=format&fit=crop&q=80',
+    isLive: true,
+    startedAt: '42m ago',
+    likesCount: 8940,
+    tags: ['#Electronic', '#SunoAI', '#AfroHouse'],
+  },
+  {
+    id: 'live_stream_zara',
+    title: '🔊 Unboxing ANC Titanium Studio Pro + Live Q&A',
+    host: mockUsers.zara,
+    viewerCount: 890,
+    category: 'Shopping',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-headphones-on-a-wooden-table-41135-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
+    isLive: true,
+    startedAt: '18m ago',
+    likesCount: 4210,
+    tags: ['#Audiophile', '#TechReview', '#SpecialOffer'],
+  },
+  {
+    id: 'live_stream_marcus',
+    title: '🍳 Farm-to-Table Gourmet Cooking & Fresh Honey Drops',
+    host: mockUsers.marcus,
+    viewerCount: 650,
+    category: 'Lifestyle',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-chef-preparing-a-dish-in-a-kitchen-41586-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80',
+    isLive: true,
+    startedAt: '31m ago',
+    likesCount: 3120,
+    tags: ['#Organic', '#CookingLive', '#FarmersMarket'],
+  },
+  {
+    id: 'live_stream_sophia',
+    title: '🚀 Building Mobile Super Apps in Africa (Live Code & Tech)',
+    host: mockUsers.sophia,
+    viewerCount: 1180,
+    category: 'Tech',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-man-working-on-a-computer-41486-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&auto=format&fit=crop&q=80',
+    isLive: true,
+    startedAt: '55m ago',
+    likesCount: 6540,
+    tags: ['#TechTalk', '#FlutterReact', '#SiliconSavannah'],
+  },
+];
+
 export const initialCallLogs: CallLog[] = [
   {
     id: 'call_1',
@@ -756,6 +813,31 @@ export function useKamatelaStore() {
     }
   });
   const [videos, setVideos] = useState<VideoItem[]>(() => getSaved('videos', initialVideos));
+  const [liveStreams, setLiveStreams] = useState<LiveStreamItem[]>(() =>
+    getSaved('live_streams', initialLiveStreams)
+  );
+
+  useEffect(() => {
+    save('live_streams', liveStreams);
+  }, [liveStreams]);
+
+  const addLiveStream = (stream: LiveStreamItem) => {
+    setLiveStreams((prev) => [stream, ...prev]);
+  };
+
+  const endLiveStream = (streamId: string) => {
+    setLiveStreams((prev) => prev.filter((s) => s.id !== streamId));
+  };
+
+  const toggleLikeLiveStream = (streamId: string) => {
+    setLiveStreams((prev) =>
+      prev.map((s) =>
+        s.id === streamId
+          ? { ...s, likesCount: (s.likesCount || 0) + 1 }
+          : s
+      )
+    );
+  };
   const [chats, setChats] = useState<ChatConversation[]>(() => getSaved('chats', initialChats));
   const [stories, setStories] = useState<UserStory[]>(() => getSaved('stories', initialStories));
   const [products, setProducts] = useState<BusinessProduct[]>(() => getSaved('products', initialProducts));
@@ -1551,5 +1633,9 @@ Fade out on the harmony...`;
     deleteProduct,
     toggleBusinessMode,
     startOrGetChatWithBusiness,
+    liveStreams,
+    addLiveStream,
+    endLiveStream,
+    toggleLikeLiveStream,
   };
 }
