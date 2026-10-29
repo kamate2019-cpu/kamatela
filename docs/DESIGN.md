@@ -1,35 +1,31 @@
-# Theme Name: Neon Tech
+# Theme Name: Industrial HUD
 
 # Vibe & Description:
-High-saturation neon on a dark base, with glassmorphism glows and layered color gradients, creating a modern, energetic, cutting-edge digital tech feel.
+Obsidian-black base, neon-orange laser lines, monospaced type, and dashboard ticks simulate the tension and mechanical feel of an industrial-grade rendering console.
 
 # Color
 
-- Use deep purple-blue as the overall background base; recommend `#1e1b4b` or a similar dark tone. Do not use pure white backgrounds, gray backgrounds, or black text.
-- Use purple `#8b5cf6` as the primary color, paired with cyan `#06b6d4`, rose `#ec4899`, and amber `#f59e0b` as accents.
-- Use gradients for large visual emphasis: `from-violet-500 via-purple-500 to-fuchsia-500`, for buttons, title accents, decorative lines, and key numbers.
-- Use a semi-transparent glass effect for cards: `bg-white/10`, `border-white/20`, with `text-white`, `text-white/80`, and `text-white/60` to preserve hierarchy.
+- Strictly limit the palette to pure black, dark gray, light gray, and neon orange.
+- Use obsidian black (#020202) for the background, deep black-gray (#0A0A0A) for panels, light gray (#E0E0E0) for text, and medium gray (#888888) for secondary information. Use neon orange (#FF4500) only as the accent color for key values, progress, laser lines, and interaction feedback, creating the visual sense of “the only life signal in a dark instrument.”
 
 # Font
 
-- Use "Alibaba PuHuiTi" as the title font to emphasize the tech feel and information hierarchy. (https://resource-static.bj.bcebos.com/fonts-skill/AlibabaPuHuiTi_SemiBold.ttf)
-- Use "Alibaba PuHuiTi" as the body font to keep it clear, modern, and readable. (https://resource-static.bj.bcebos.com/fonts-skill/AlibabaPuHuiTi_Regular.ttf)
+- Use “ZCOOLKuHei” as the title font. (https://resource-static.bj.bcebos.com/fonts-skill/ZCOOLKuHei_Regular.ttf)
+- Use “AlibabaPuHuiTi” as the body font. (https://resource-static.bj.bcebos.com/fonts-skill/AlibabaPuHuiTi_Regular.ttf)
 
 # Animation
 
-- Use subtle scaling feedback when buttons or cards are tapped: `active:scale-95`, paired with enhanced colored shadows to create a clear touch response.
-- When elements appear, use a "fade in + glow spread" effect; gradient accents can float slowly to create a dynamic tech atmosphere.
-- Keep all interactions smooth: `transition-all duration-300`, avoiding abrupt shifts and traditional hard-edged shadows.
+- On touch, elements should not use soft elastic feedback, but produce a brief, precise mechanical response: the border turns neon orange, shifts slightly upward, and compresses slightly when pressed.
+- When data appears, use animations such as progress-bar filling, log scrolling, and laser breathing. Keep them calm and restrained, reinforcing only state changes without decorative motion.
 
 # Layout
 
-- Build the page on a dark full-screen background, with a simple logo and primary action entry at the top, and vertically scrolling content below.
-- Make the hero area stand out with a large title, subtitle, and main CTA, with blurred gradient glow orbs layered in the background to create a focal point.
-- Present features, data, and reviews in vertically stacked glass cards, with generous spacing between cards and a clear mobile reading rhythm.
+- Use a high-density, whitespace-free console-style layout, with sections tightly connected and borders directly dividing information areas.
+- Use a top status bar, core visual area, task list, node logs, and cluster cards to form a clear hierarchy. On mobile, keep a vertical stacked structure to ensure information remains compact yet readable.
 
 # Elements
 
-- Use a purple-to-rose gradient background for buttons, with `rounded-2xl` corners and a colored glow shadow: `shadow-violet-500/30`.
-- Use `rounded-3xl`, semi-transparent backgrounds, thin white borders, and `backdrop-blur-xl` for cards to create a floating glass feel.
-- Use gradient text for key numbers, and add cyan, light purple, or rose accents to titles and icons.
-- Use blurred colored spots, gradient lines, and semi-transparent overlays for background decoration, avoiding solid white cards, black text, and sharp corners.
+- Cards, tables, and log panels all use sharp-corner borders. Rounded corners and shadows are prohibited. Borders are uniformly #333333.
+- Progress bars, key values, and active states uniformly use #FF4500; avoid any other highly saturated colors.
+- The background may overlay subtle grain noise to simulate the texture of an industrial screen and film.
+- The visual focus may use CSS to draw an obsidian sphere and orange laser lines, strengthening the void-rendering feel and premium VFX console character.

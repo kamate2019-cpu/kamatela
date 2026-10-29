@@ -158,6 +158,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       verified: true,
     };
 
+    localStorage.setItem('kamatela_whatsapp_registered', 'true');
+    localStorage.setItem('kamatela_whatsapp_phone', fullPhone);
+    localStorage.setItem('kamatela_whatsapp_name', updatedUser.name);
+
     onLogin(updatedUser, `session_${Date.now()}`);
     toast.success(`Welcome to KAMATELA, ${updatedUser.name}!`);
     onClose();

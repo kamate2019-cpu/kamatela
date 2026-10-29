@@ -1,5 +1,5 @@
 import React from 'react';
-import { Film, MessageSquare, Briefcase, User, Sparkles, Music } from 'lucide-react';
+import { Film, MessageSquare, ShieldCheck, User, Sparkles, Music } from 'lucide-react';
 import type { TabType } from '@/types/kamatela';
 
 interface BottomTabBarProps {
@@ -16,9 +16,9 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   const tabs = [
     {
-      id: 'feed' as TabType,
-      label: 'Streams',
-      icon: Film,
+      id: 'business' as TabType,
+      label: 'iCenter',
+      icon: ShieldCheck,
     },
     {
       id: 'chats' as TabType,
@@ -27,15 +27,15 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       badge: unreadChatsCount,
     },
     {
+      id: 'feed' as TabType,
+      label: 'Streams',
+      icon: Film,
+    },
+    {
       id: 'studio' as TabType,
       label: 'AI Music',
       icon: Music,
       sparkle: true,
-    },
-    {
-      id: 'business' as TabType,
-      label: 'Hub',
-      icon: Briefcase,
     },
     {
       id: 'profile' as TabType,

@@ -15,6 +15,7 @@ import { BusinessHub } from '@/components/business/BusinessHub';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { MusicStudioView } from '@/components/music/MusicStudioView';
 import { ProductDetailModal } from '@/components/business/ProductDetailModal';
+import { ZteICenterHub } from '@/components/icenter/ZteICenterHub';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { NetworkMonitorModal } from '@/components/common/NetworkMonitorModal';
 import { LiveStreamPlayerModal } from '@/components/live/LiveStreamPlayerModal';
@@ -22,7 +23,8 @@ import { LiveBroadcastHostModal } from '@/components/live/LiveBroadcastHostModal
 import type { LiveStreamItem } from '@/types/kamatela';
 
 export const HomePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('feed');
+  const [activeTab, setActiveTab] = useState<TabType>('business');
+  const [hubSubView, setHubSubView] = useState<'icenter' | 'marketplace'>('icenter');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [activeChatTargetId, setActiveChatTargetId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<BusinessProduct | null>(null);
@@ -226,14 +228,66 @@ export const HomePage: React.FC = () => {
         )}
 
         {activeTab === 'business' && (
-          <BusinessHub
-            products={products}
-            currentUser={user}
-            onAddProduct={addProduct}
-            onDeleteProduct={deleteProduct}
-            onStartBusinessChat={handleStartBusinessChat}
-            musicTracks={musicTracks}
-          />
+          <div className="w-full">
+            {hubSubView === 'icenter' ? (
+              <ZteICenterHub
+                currentUser={user}
+                unreadChatsCount={chats.reduce((acc, c) => acc + (c.unreadCount || 0), 0)}
+                coins={user.coins || 0}
+                downloadedVideosCount={downloadedVideos.length}
+                downloadedTracksCount={downloadedVideos.length}
+                voiceRoomsCount={voiceRooms.length}
+                productsCount={products.length}
+                liveStreamsCount={liveStreams.length}
+                onNavigateTab={(tab) => {
+                  if (tab === 'business') {
+                    setHubSubView('marketplace');
+                  } else {
+                    setActiveTab(tab);
+                  }
+                }}
+                onOpenChat={(chatId) => {
+                  setActiveChatTargetId(chatId || null);
+                  setActiveTab('chats');
+                }}
+                onOpenUploadVideo={() => setIsUploadOpen(true)}
+                onOpenBroadcastModal={() => setIsBroadcastModalOpen(true)}
+                onOpenTopUpModal={() => setIsTopUpModalOpen(true)}
+                onOpenNetworkModal={() => setIsNetworkModalOpen(true)}
+                onOpenAuthModal={() => {
+                  setAuthInitialMode('login');
+                  setIsAuthModalOpen(true);
+                }}
+                onCleanCache={() => {
+                  clearAllFlightVideos();
+                  toast.success('Offline cache cleaned!');
+                }}
+              />
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2 px-1">
+                  <button
+                    type="button"
+                    onClick={() => setHubSubView('icenter')}
+                    className="flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                  >
+                    <span>← Back to ZTE iCenter</span>
+                  </button>
+                  <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                    Creator Marketplace
+                  </span>
+                </div>
+                <BusinessHub
+                  products={products}
+                  currentUser={user}
+                  onAddProduct={addProduct}
+                  onDeleteProduct={deleteProduct}
+                  onStartBusinessChat={handleStartBusinessChat}
+                  musicTracks={musicTracks}
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {activeTab === 'profile' && (
