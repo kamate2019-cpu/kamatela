@@ -154,8 +154,13 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between gap-1 mt-1">
-                    <p className="text-[11px] text-muted-foreground truncate leading-tight flex-1">
-                      {chat.lastMessage}
+                    <p className="text-[11px] text-muted-foreground truncate leading-tight flex-1 flex items-center gap-1">
+                      {chat.disappearingTimer && chat.disappearingTimer !== 'off' && (
+                        <span className="text-[9px] px-1 rounded bg-secondary text-emerald-400 font-mono">
+                          {chat.disappearingTimer}
+                        </span>
+                      )}
+                      <span className="truncate">{chat.lastMessage}</span>
                     </p>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span

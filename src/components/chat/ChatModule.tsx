@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type {
   ChatConversation,
+  ChatMessage,
   UserStory,
   User,
   CallLog,
@@ -42,7 +43,23 @@ interface ChatModuleProps {
   callLogs: CallLog[];
   voiceRooms: VoiceRoom[];
   currentUser: User;
-  onSendMessage: (chatId: string, text: string, mediaType?: 'image' | 'voice' | 'product' | 'song' | 'call_memo', mediaUrl?: string) => void;
+  onSendMessage: (
+    chatId: string,
+    text: string,
+    mediaType?: ChatMessage['mediaType'],
+    mediaUrl?: string,
+    extraSnippet?: {
+      productSnippet?: ChatMessage['productSnippet'];
+      songSnippet?: ChatMessage['songSnippet'];
+      callMemoSnippet?: ChatMessage['callMemoSnippet'];
+      voiceNote?: ChatMessage['voiceNote'];
+      documentSnippet?: ChatMessage['documentSnippet'];
+      locationSnippet?: ChatMessage['locationSnippet'];
+      contactCard?: ChatMessage['contactCard'];
+      momoTransfer?: ChatMessage['momoTransfer'];
+      replyTo?: ChatMessage['replyTo'];
+    }
+  ) => void;
   onAddStory: (mediaUrl: string, caption?: string) => void;
   onLogCall: (log: Omit<CallLog, 'id'>) => void;
   onClearCallLogs: () => void;
@@ -71,6 +88,11 @@ interface ChatModuleProps {
       audioUrl?: string;
     }
   ) => void;
+  onReactToMessage?: (chatId: string, messageId: string, emoji: string) => void;
+  onDeleteMessage?: (chatId: string, messageId: string, forEveryone: boolean) => void;
+  onToggleStarMessage?: (chatId: string, messageId: string) => void;
+  onSetDisappearingTimer?: (chatId: string, timer: 'off' | '24h' | '7d' | '90d') => void;
+  onClearChatHistory?: (chatId: string) => void;
 }
 
 export const ChatModule: React.FC<ChatModuleProps> = ({
@@ -100,6 +122,11 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
   onUnblockUser,
   onReportUser,
   onSaveCallMemoToChat,
+  onReactToMessage,
+  onDeleteMessage,
+  onToggleStarMessage,
+  onSetDisappearingTimer,
+  onClearChatHistory,
 }) => {
   const [subTab, setSubTab] = useState<'chats' | 'voice_rooms' | 'calls'>('chats');
   const [activeChatId, setActiveChatId] = useState<string | null>(initialChatId || null);
@@ -562,6 +589,11 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
           onBlockUser={onBlockUser}
           onUnblockUser={onUnblockUser}
           onReportUser={onReportUser}
+          onReactToMessage={onReactToMessage}
+          onDeleteMessage={onDeleteMessage}
+          onToggleStarMessage={onToggleStarMessage}
+          onSetDisappearingTimer={onSetDisappearingTimer}
+          onClearChatHistory={onClearChatHistory}
         />
       ) : subTab === 'chats' ? (
         <div className="h-[calc(100vh-14rem)] md:h-[620px]">

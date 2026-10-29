@@ -2,22 +2,22 @@
 
 ## 1. Application Overview
 - Application Name: KAMATELA
-- Description: A mobile-first Progressive Web Application (PWA) structured as an integrated super-app inspired by ZTE iCenter architecture. KAMATELA combines WhatsApp-style phone onboarding and real-time communications, dual co-host live streaming, offline-capable short video discovery, an AI Music Generation Studio with stem separation, multi-participant group voice rooms with stage mini-games, multi-channel mobile money wallet services, a creator/business marketplace, and a centralized Device Privacy & Security Hub backed by cross-network session resiliency.
+- Description: A mobile-first Progressive Web Application structured as an integrated super-app inspired by ZTE iCenter architecture. KAMATELA combines phone-based onboarding and real-time instant messaging, dual co-host live streaming, offline-capable short video discovery, an AI Music Generation Studio with stem separation, multi-participant group voice rooms with stage mini-games, multi-channel mobile money wallet services, a creator/business marketplace, and a centralized Device Privacy and Security Hub backed by cross-network session resiliency.
 
 ## 2. Users and Core Scenarios
 - Target Users:
-  - General Users: Individuals connecting with friends and family, participating in voice rooms, chatting, calling, and managing personal wallet balances.
-  - Creators & Live Broadcasters: Users generating AI music, sharing short videos with offline flight download support, hosting single or dual co-host live streams, and monetizing services.
+  - General Users: Individuals connecting with contacts, participating in voice rooms, chatting with rich messaging features, calling, and managing personal wallet balances.
+  - Creators and Live Broadcasters: Users generating AI music, sharing short videos with offline download support, hosting single or dual co-host live streams, and monetizing services.
   - Business Owners: Small businesses and merchants listing catalogs in the Creator Marketplace, sharing business QR codes, and processing mobile money payments.
 - Core Scenarios:
-  - Registering and logging in via WhatsApp-style phone verification with international country code selection, receiving an on-screen 6-digit SMS code with auto-fill, and configuring a user profile with display name and status message.
-  - Switching effortlessly between saved demo or secondary accounts and managing global logout across tabs.
+  - Registering and logging in via phone verification with international country code selection, receiving an on-screen 6-digit SMS code with auto-fill, and configuring a user profile with display name and status message.
+  - Switching between saved demo or secondary accounts and managing global session state across browser tabs.
+  - Chatting in 1-on-1 and group threads with rich text, voice notes with speed toggles, delivery receipts, quoted replies, emoji reactions, document/location/contact/money attachments, disappearing messages, and presence indicators.
   - Initiating or watching live streams, sending or accepting co-host requests, and broadcasting simultaneously on a 50/50 dual split-screen stage.
-  - Chatting in 1-on-1 and group threads with text, voice notes, media, embedded AI song cards, contact QR cards, and in-call recording memos with full offline sync queuing.
-  - Placing simulated voice and video calls with swipe controls and in-call memo recording.
+  - Placing voice and video calls with swipe controls and in-call recording memos with offline sync queuing.
   - Generating AI music tracks, separating stems (Vocals, Beat, Bassline), and playing audio continuously in a persistent floating mini player.
   - Joining interactive voice rooms with background music and live stage mini-games (Trivia Quiz and Coin Lucky Wheel).
-  - Funding wallets via M-Pesa, MTN MoMo, Orange Money, or bank cards and viewing transaction histories.
+  - Funding wallets via M-Pesa, MTN MoMo, Orange Money, or bank cards and conducting peer-to-peer transfers inside chat threads.
   - Managing device security, network data saver modes, offline video storage cache, and privacy permissions in the Security Hub.
 
 ## 3. Page Structure and Functional Description
@@ -29,14 +29,15 @@ KAMATELA (iCenter Architecture)
 │   ├── Top Header (Network Status, Latency Indicator, Security Status, Search)
 │   ├── Floating Mini Audio Player (Global Audio Playback & Offline Mode)
 │   └── Bottom Navigation Bar (Chats, Feeds & Live, iCenter Hub, AI Studio, Profile)
-├── Authentication & Account Management (WhatsApp Style)
+├── Authentication & Account Management
 │   ├── Phone Number Verification Screen (Country Code Selector, Phone Input)
 │   ├── 6-Digit SMS Code Verification Screen (On-Screen Code Banner, Auto-Fill, Resend Timer)
 │   ├── Profile Setup Screen (Avatar Upload, Display Name, Status Message/About)
 │   └── Account Switcher & Session Controller (Demo Profiles, Multi-Tab Sync, Logout)
-├── Module 1: Communication Center (WhatsApp-Style Chats & Calls)
-│   ├── Conversation List (Search, Offline Sync Status, QR Entry, Sync Contacts Action)
-│   ├── Chat Room (Text, Voice Notes, Media, AI Song Cards, Call Recording Memos, Sync Queue)
+├── Module 1: Communication Center (Instant Messaging & Calls)
+│   ├── Conversation List (Search, Presence Indicators, Sync Status, QR Entry, Sync Contacts Action)
+│   ├── Chat Room (Rich Messaging, Voice Notes, Rich Attachments, Message Actions, Delivery Status)
+│   ├── Chat Info & Media Drawer (Contact Profile, Media Gallery, Shared Docs, Starred Messages, Disappearing Timer)
 │   ├── QR Code Center (My Contact QR Card, Live Camera Scanner, File Upload Scanner)
 │   ├── Contact Management & Sync (Native Contact Picker, vCard Import, Matched/Invite Lists)
 │   ├── Call Screen & Overlay (Voice/Video Call, Swipe Gestures, In-Call Audio Recorder)
@@ -65,7 +66,7 @@ KAMATELA (iCenter Architecture)
 
 ### 3.2 Page Functional Descriptions
 
-#### 3.2.1 WhatsApp-Style Authentication Module
+#### 3.2.1 Authentication Module
 - Phone Number Verification Screen:
   - Searchable country code dropdown with international dial codes and flag indicators.
   - Phone number input field with format validation.
@@ -83,15 +84,39 @@ KAMATELA (iCenter Architecture)
   - [Complete Setup] button directing users to the main application.
 - Account Switcher & Session Controller:
   - Demo account switcher offering instant pre-configured profiles (Creator, Business, Nomad).
-  - Session persistence retaining authentication across network switches (Wi-Fi, 4G/5G, 3G/2G, Offline).
+  - Session persistence retaining authentication across network switches.
   - Multi-tab synchronization utilizing browser channels to synchronize login and logout events across tabs.
 
-#### 3.2.2 Communication Center (Chats & Calls)
-- Conversation List: Displays active 1-on-1 and group chats, preview snippets, unread message badges, offline pending indicators, and quick action headers for QR Scanner and Contact Sync.
+#### 3.2.2 Communication Center (Instant Messaging & Calls)
+- Conversation List:
+  - Displays active 1-on-1 and group chats with profile avatar, contact name, last message snippet, timestamp, unread badge, and presence indicator (online status/typing label).
+  - Search bar to filter conversations by name or message content.
+  - Header actions for QR Scanner and Contact Sync.
 - Chat Room:
-  - Messaging: Supports text input, inline voice note recorder, photo/video attachments, and local message status indicators (Pending / Sent / Cached).
-  - AI Song Cards: Embedded playable music cards with cover, title, genre, and play/pause controls.
-  - Call Recording Memos: Chronological voice memo bubbles recorded during calls for playback in-thread.
+  - Header: Displays contact name, avatar, online / last seen status, live typing indicator simulation, and an info drawer toggle button.
+  - Message Stream: Chronological list of message bubbles with sender distinction, timestamp, and delivery status indicators (single check for Sent, double check for Delivered, blue double check for Read).
+  - Voice Notes Module:
+    - Microphone recording button with hold/tap action.
+    - Live recording state showing duration counter, real-time waveform visualizer animation, and [Cancel] / [Send] controls.
+    - Playback audio bubble featuring play/pause toggle, audio progress scrub bar, total duration, and playback speed toggle button (1x / 1.5x / 2x).
+  - Rich Attachment Menu:
+    - Photo/Image: Image attachment picker with image preview.
+    - Document/PDF: File attachment card displaying document name, file size, and file type icon.
+    - Location Card: Shared location preview card with map thumbnail, address label, and coordinate details.
+    - Contact Card: Interactive contact share card with avatar, name, phone number, and [Add Contact] action.
+    - MoMo Transfer Card: Integrated mobile money transfer bubble displaying transfer amount, currency, transaction reference, and status badge.
+    - AI Song Card & Call Recording Memo: Embedded playable music cards and recorded call audio bubbles.
+  - Message Action Controls:
+    - Quick reaction picker supporting preset reaction options (Thumbs Up, Heart, Laugh, Surprised, Sad, Pray).
+    - Swipe or click action to reply with a quoted message preview banner docked above the input field.
+    - Context actions: Copy text, Star message, Forward message, and Delete for everyone.
+- Chat Info & Media Drawer:
+  - Profile summary showing contact avatar, display name, phone number, and status message.
+  - Encryption badge indicating communication status.
+  - Shared Media Gallery: Tabbed collection for shared photos, videos, and embedded audio.
+  - Shared Documents: List of shared document files with file names and size metadata.
+  - Starred Messages: Dedicated list of all messages marked as starred within the conversation.
+  - Disappearing Messages Controller: Configurable timer settings (24 Hours, 7 Days, 90 Days, Off).
 - QR Code Center:
   - My QR Code: Displays personal profile card, QR code, phone number, and status with download and share actions.
   - Scan QR Code: Camera viewfinder with torch and camera flip controls, file upload scanner fallback, and sample contact QR selection.
@@ -113,7 +138,7 @@ KAMATELA (iCenter Architecture)
   - Dual Split-Screen Stage: Automatically renders a 50/50 dual video layout when a co-host connects, streaming synchronized audio and video from both host and guest.
   - In-Stream Controls: Host controls to mute/disconnect guest or end broadcast; guest controls to toggle mic, toggle camera, or leave stream.
 - Offline Flight Videos:
-  - Quality Selector Modal: Quality selection (Standard 480p, High 720p, Ultra 1080p) showing estimated file sizes and storage savings.
+  - Quality Selector Modal: Quality selection (Standard 480p, High 720p, Ultra 1080p) showing estimated file sizes.
   - Flight Mode Player: Full-screen video player dedicated to playing locally cached videos when offline.
   - Batch Download: One-tap action to download the top 5 trending videos in the selected quality tier.
 
@@ -145,29 +170,30 @@ KAMATELA (iCenter Architecture)
 - Preferences: Default offline video download quality tier selector, Data Saver toggle, and global logout action.
 
 ## 4. Business Rules and Core Logic
-1. WhatsApp-Style Phone Verification Lifecycle:
+1. Phone Verification Lifecycle:
    - Users enter a phone number after selecting an international country code.
    - An on-screen SMS simulation displays a 6-digit verification code. Users can enter the code manually or tap [Auto-Fill].
    - Successful verification checks if a profile exists; if not, the user is routed to the Profile Setup screen to configure display name and status message before accessing the app.
-2. Dual Live Co-Hosting Mechanism:
+2. Instant Messaging State and Delivery Receipts:
+   - Messages transition through three delivery statuses: Sent (single check), Delivered (double check), and Read (blue double check).
+   - Quoted replies attach the target message payload above the new input and display a clickable quote reference in the rendered bubble.
+   - Deleting a message for everyone replaces bubble content with a revoked message placeholder across conversation participants.
+3. Disappearing Messages Lifecycle:
+   - When disappearing messages are enabled in Chat Info, messages sent after configuration automatically purge from the conversation thread upon timer expiration (24h, 7d, or 90d).
+4. Voice Note Audio Processing:
+   - Recorded voice notes capture audio duration and waveform points locally.
+   - Playback supports dynamic rate switching among 1x, 1.5x, and 2x speeds without altering audio pitch baseline.
+5. Dual Live Co-Hosting Mechanism:
    - Viewers can send co-host requests; hosts can accept/decline or invite any active viewer.
    - Upon acceptance, the broadcast transitions into a dual split-screen stage with active audio/video for both parties.
    - Either party leaving or disconnecting smoothly returns the broadcast to a single-host layout without ending the main live stream.
-3. Session Resiliency & Multi-Tab Broadcast:
-   - User sessions and authentication tokens remain active across network changes (Wi-Fi, 4G/5G, 3G/2G, Offline).
+6. Session Resiliency & Multi-Tab Synchronization:
+   - User sessions and authentication tokens remain active across network changes.
    - Authentication status, account switching, and wallet balance updates synchronize across all open browser tabs via BroadcastChannel.
-4. Offline Video Downloads & Quality Tiers:
-   - Offline downloads support three explicit tiers: Standard (480p), High (720p), and Ultra (1080p).
-   - Cached videos are accessible in Flight Mode without an active internet connection, displaying their resolution badges.
-5. Background Action Queue:
+7. Background Action Queue:
    - Messages, top-ups, and profile changes made while offline are placed in a persistent local queue and automatically submitted upon network restoration.
-6. QR Contact Exchange & Contact Matching:
-   - User QR codes contain structured profile payloads. Scanning via camera or file upload immediately opens the Scanned Contact Card.
-   - Contact syncing compares imported numbers with registered records to generate matched chat links and unregistered invite actions.
-7. Audio Continuity:
+8. Audio Continuity:
    - The global floating mini player maintains uninterrupted audio playback across internal page transitions and tab changes for both online streams and cached tracks.
-8. Wallet and Mobile Money Updates:
-   - Successful top-ups via M-Pesa, MTN MoMo, Orange Money, or Card instantly credit the local wallet balance and log a transaction record.
 
 ## 5. Exceptions and Edge Cases
 
@@ -176,22 +202,22 @@ KAMATELA (iCenter Architecture)
 | Invalid SMS Verification Code | User enters an incorrect 6-digit code | Highlight code inputs in red, clear input values, and display an invalid code error message |
 | Expired SMS Verification Code | Verification code entered after validity expiration | Prompt user to request a new SMS code and reset the resend timer |
 | Camera/Mic Permission Blocked | User denies media permissions during live stream or call | Show an explicit permission guidance banner and disable streaming actions until granted |
+| Voice Note Recording Interrupted | User cancels or network drops during recording | Discard active recording buffer without creating an empty chat message |
 | Co-Host Network Disconnect | Co-host loses connection during split-screen broadcast | Display reconnecting indicator on co-host pane; revert to single host layout if unrecovered after grace period |
-| Offline Video Storage Full | Browser storage limit reached during video download | Notify user of insufficient storage and offer option to delete cached items in Security Hub |
 | Message Sent While Offline | Chat message sent with zero network connectivity | Store message in local sync queue with a pending icon; auto-send when connection is restored |
 | Contact Sync File Malformed | User uploads an invalid or unreadable .vcf file | Display file parse error message and suggest native contact picker or manual QR scan |
 | Missing Top-Up Details | Top-up submitted without selecting channel or entering amount | Highlight missing fields and prevent transaction submission |
 
 ## 6. Acceptance Criteria
 1. Users can register and log in by selecting a country code, inputting a phone number, receiving an on-screen 6-digit SMS code, and using the one-tap auto-fill action.
-2. First-time users or unconfigured accounts can set their display name, avatar, and status message on the Profile Setup screen.
-3. Switching demo accounts or logging out in one browser tab immediately updates all open tabs in real time.
-4. Broadcasters and viewers can establish a dual live co-host split-screen broadcast and revert to single-host mode upon disconnection.
-5. Users can send text, voice notes, media, AI song cards, and call recording memos in chat threads with offline queuing support.
-6. Users can generate, share, and scan KAMATELA contact QR codes using the camera or file upload scanner to view contact cards.
-7. Device contacts can be imported via native contact picker or .vcf file and segregated into matched users and unregistered contacts.
-8. Short videos can be downloaded in 480p, 720p, or 1080p quality tiers and played smoothly in Flight Mode while completely offline.
-9. The Device Privacy & Security Hub accurately reports network latency, Data Saver toggle state, and cached storage usage with clear-cache controls.
+2. Users can record voice notes with live waveform and duration display, cancel or send recordings, and play received voice notes at 1x, 1.5x, or 2x speed.
+3. Chat messages display accurate delivery indicators (Sent, Delivered, Read), support emoji reactions, quoted replies, text copying, starring, forwarding, and delete-for-everyone.
+4. Chat threads support sending and viewing rich attachment cards including Images, Documents with file size, Location map previews, Contact cards, and MoMo Money transfer cards.
+5. The Chat Info drawer displays contact profile details, shared media gallery, shared documents, starred messages, encryption status badge, and disappearing message timer configuration.
+6. Active conversation lists and chat headers display live typing and online/last seen presence status simulations.
+7. Broadcasters and viewers can establish a dual live co-host split-screen broadcast and revert to single-host mode upon disconnection.
+8. Users can generate, share, and scan KAMATELA contact QR codes using the camera or file upload scanner to view contact cards.
+9. Short videos can be downloaded in 480p, 720p, or 1080p quality tiers and played smoothly in Flight Mode while completely offline.
 10. AI Music Studio generates tracks, enables stem separation (Vocals, Beat, Bassline), and plays audio continuously via the persistent floating mini player.
 11. Group voice rooms support live voice discussions, background music, Trivia Quiz scoring, and Coin Lucky Wheel spins.
 12. Users can submit top-ups across M-Pesa, MTN MoMo, Orange Money, and Card with updated balance and transaction logs.

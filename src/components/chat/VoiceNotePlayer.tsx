@@ -5,17 +5,28 @@ interface VoiceNotePlayerProps {
   audioUrl?: string;
   isMe: boolean;
   label?: string;
+  waveform?: number[];
+  durationSeconds?: number;
 }
 
 export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
   audioUrl,
   isMe,
   label = 'Voice message',
+  waveform,
+  durationSeconds,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(durationSeconds || 0);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (durationSeconds) {
+      setDuration(durationSeconds);
+    }
+  }, [durationSeconds]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -24,8 +35,8 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
     const handleLoadedMetadata = () => {
       if (audio.duration && !isNaN(audio.duration)) {
         setDuration(Math.round(audio.duration));
-      } else {
-        setDuration(12); // fallback display
+      } else if (!durationSeconds) {
+        setDuration(12);
       }
     };
 
@@ -47,7 +58,18 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, []);
+  }, [durationSeconds]);
+
+  const toggleSpeed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const speeds = [1, 1.5, 2];
+    const nextIndex = (speeds.indexOf(playbackSpeed) + 1) % speeds.length;
+    const nextSpeed = speeds[nextIndex];
+    setPlaybackSpeed(nextSpeed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextSpeed;
+    }
+  };
 
   const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,22 +80,24 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
       audio.pause();
       setIsPlaying(false);
     } else {
+      audio.playbackRate = playbackSpeed;
       audio
         .play()
         .then(() => setIsPlaying(true))
         .catch(() => {
-          // Play simulated timer if blob audio is empty
           setIsPlaying(true);
+          const maxSecs = duration || 12;
+          const intervalMs = Math.round(1000 / playbackSpeed);
           const t = setInterval(() => {
             setCurrentTime((p) => {
-              if (p >= 8) {
+              if (p >= maxSecs) {
                 clearInterval(t);
                 setIsPlaying(false);
                 return 0;
               }
               return p + 1;
             });
-          }, 1000);
+          }, intervalMs);
         });
     }
   };
@@ -84,8 +108,12 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const bars = waveform && waveform.length > 0
+    ? waveform
+    : [35, 70, 45, 90, 60, 40, 80, 50, 75, 30, 85, 65, 40, 95, 55, 30];
+
   return (
-    <div className="flex items-center gap-2.5 py-1 px-1 min-w-[210px]">
+    <div className="flex items-center gap-2.5 py-1 px-1 min-w-[230px]">
       {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
 
       {/* Play / Pause circle button */}
@@ -105,9 +133,10 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
       {/* Animated Waveform Visualizer */}
       <div className="flex-1 flex flex-col justify-center gap-1">
         <div className="flex items-center gap-0.5 h-6">
-          {[35, 70, 45, 90, 60, 40, 80, 50, 75, 30, 85, 65, 40, 95, 55, 30].map((h, i) => {
+          {bars.map((h, i) => {
+            const totalBars = bars.length;
             const playedRatio = duration > 0 ? currentTime / duration : 0;
-            const isPlayed = i / 16 <= playedRatio;
+            const isPlayed = i / totalBars <= playedRatio;
             return (
               <div
                 key={i}
@@ -130,7 +159,20 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
 
         <div className="flex items-center justify-between text-[10px] opacity-80 font-mono">
           <span>{isPlaying ? formatSecs(currentTime) : label}</span>
-          <span>{formatSecs(duration || 12)}</span>
+          <div className="flex items-center gap-1.5">
+            <span>{formatSecs(duration || 12)}</span>
+            <button
+              type="button"
+              onClick={toggleSpeed}
+              className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-colors ${
+                isMe
+                  ? 'bg-emerald-800/60 hover:bg-emerald-800 text-white'
+                  : 'bg-secondary hover:bg-secondary/80 text-foreground'
+              }`}
+            >
+              {playbackSpeed}x
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -338,6 +338,7 @@ export const initialChats: ChatConversation[] = [
     lastTimestamp: '10:42 AM',
     unreadCount: 1,
     isPinned: true,
+    disappearingTimer: 'off',
     messages: [
       {
         id: 'm1',
@@ -345,24 +346,40 @@ export const initialChats: ChatConversation[] = [
         text: 'Welcome to KAMATELA Chat! Messages and calls are end-to-end encrypted. No one outside of this chat, not even KAMATELA, can read or listen to them.',
         timestamp: '10:40 AM',
         status: 'read',
+        reactions: [{ emoji: '🔒', count: 1, users: ['user_official'] }],
       },
       {
         id: 'm2',
         senderId: 'user_official',
         text: 'Welcome to KAMATELA Chat! Your account is verified. Tap here to start chatting securely.',
         timestamp: '10:42 AM',
-        status: 'delivered',
-      }
-    ]
+        status: 'read',
+        reactions: [{ emoji: '✨', count: 2, users: ['user_official', 'user_me'] }],
+      },
+      {
+        id: 'm_doc_1',
+        senderId: 'user_official',
+        text: 'Official Platform User Guide',
+        timestamp: '10:43 AM',
+        status: 'read',
+        mediaType: 'document',
+        documentSnippet: {
+          fileName: 'KAMATELA_SuperApp_Guide_v2.pdf',
+          fileSize: '2.4 MB',
+          fileType: 'PDF Document',
+        },
+      },
+    ],
   },
   {
     id: 'chat_mamadou',
     type: 'direct',
     participant: mockUsers.mamadou,
-    lastMessage: 'Hey! Glad to see you on KAMATELA Chat. Everything is running smoothly now!',
-    lastTimestamp: '9:15 AM',
+    lastMessage: 'Just sent the MoMo payment for the studio sound system!',
+    lastTimestamp: '9:20 AM',
     unreadCount: 0,
     isPinned: true,
+    disappearingTimer: 'off',
     messages: [
       {
         id: 'm3',
@@ -377,15 +394,56 @@ export const initialChats: ChatConversation[] = [
         text: 'Yes! The camera and live co-hosting are ready. Let us test now.',
         timestamp: 'Yesterday 8:14 PM',
         status: 'read',
+        replyTo: {
+          id: 'm3',
+          senderName: 'Mamadou Diallo',
+          text: 'Hey! Are we testing the new video live streaming today?',
+        },
+        reactions: [{ emoji: '👍', count: 1, users: ['user_mamadou'] }],
       },
       {
-        id: 'm5',
+        id: 'm_voice_1',
         senderId: 'user_mamadou',
-        text: 'Hey! Glad to see you on KAMATELA Chat. Everything is running smoothly now!',
+        text: 'Voice note (18s)',
+        timestamp: '9:12 AM',
+        status: 'read',
+        mediaType: 'voice',
+        voiceNote: {
+          durationSeconds: 18,
+          waveform: [30, 45, 60, 85, 40, 70, 95, 65, 80, 50, 40, 60, 85, 30, 20],
+        },
+      },
+      {
+        id: 'm_loc_1',
+        senderId: 'user_me',
+        text: 'Meeting at our creator studio',
         timestamp: '9:15 AM',
-        status: 'delivered',
-      }
-    ]
+        status: 'read',
+        mediaType: 'location',
+        locationSnippet: {
+          title: 'KAMATELA Creator Studio',
+          address: 'Boulevard de la République, Plateau, Abidjan',
+          lat: 5.3253,
+          lng: -4.0197,
+        },
+        reactions: [{ emoji: '📍', count: 1, users: ['user_mamadou'] }],
+      },
+      {
+        id: 'm_momo_1',
+        senderId: 'user_mamadou',
+        text: 'MoMo Transfer: 50,000 XOF',
+        timestamp: '9:20 AM',
+        status: 'read',
+        mediaType: 'momo',
+        momoTransfer: {
+          amount: 50000,
+          currency: 'XOF',
+          status: 'completed',
+          txId: 'MOMO-77291-KMT',
+        },
+        reactions: [{ emoji: '🙏', count: 2, users: ['user_mamadou', 'user_me'] }],
+      },
+    ],
   },
   {
     id: 'chat_fatoumata',
@@ -394,6 +452,7 @@ export const initialChats: ChatConversation[] = [
     lastMessage: 'Hello! Welcome to KAMATELA. Feel free to reach out anytime.',
     lastTimestamp: 'Yesterday',
     unreadCount: 0,
+    disappearingTimer: 'off',
     messages: [
       {
         id: 'm6',
@@ -401,9 +460,21 @@ export const initialChats: ChatConversation[] = [
         text: 'Hello! Welcome to KAMATELA. Feel free to reach out anytime.',
         timestamp: 'Yesterday',
         status: 'read',
-      }
-    ]
-  }
+      },
+      {
+        id: 'm_contact_1',
+        senderId: 'user_fatoumata',
+        text: 'Shared Contact',
+        timestamp: 'Yesterday',
+        status: 'read',
+        mediaType: 'contact',
+        contactCard: {
+          name: 'Ibrahim Kamate',
+          phone: '+225 07 00 11 22 33',
+        },
+      },
+    ],
+  },
 ];
 
 export const initialStories: UserStory[] = [
@@ -1036,7 +1107,7 @@ export function useKamatelaStore() {
   const sendMessage = (
     chatId: string,
     text: string,
-    mediaType?: 'image' | 'voice' | 'product' | 'song' | 'call_memo',
+    mediaType?: ChatMessage['mediaType'],
     mediaUrl?: string,
     extraSnippet?: {
       productSnippet?: { id: string; title: string; price: number; imageUrl: string };
@@ -1048,10 +1119,17 @@ export function useKamatelaStore() {
         audioUrl?: string;
         recordedAt: string;
       };
+      voiceNote?: ChatMessage['voiceNote'];
+      documentSnippet?: ChatMessage['documentSnippet'];
+      locationSnippet?: ChatMessage['locationSnippet'];
+      contactCard?: ChatMessage['contactCard'];
+      momoTransfer?: ChatMessage['momoTransfer'];
+      replyTo?: ChatMessage['replyTo'];
     }
   ) => {
+    const newMsgId = 'msg_' + Date.now();
     const newMsg: ChatMessage = {
-      id: 'msg_' + Date.now(),
+      id: newMsgId,
       senderId: user.id,
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -1061,6 +1139,12 @@ export function useKamatelaStore() {
       productSnippet: extraSnippet?.productSnippet,
       songSnippet: extraSnippet?.songSnippet,
       callMemoSnippet: extraSnippet?.callMemoSnippet,
+      voiceNote: extraSnippet?.voiceNote,
+      documentSnippet: extraSnippet?.documentSnippet,
+      locationSnippet: extraSnippet?.locationSnippet,
+      contactCard: extraSnippet?.contactCard,
+      momoTransfer: extraSnippet?.momoTransfer,
+      replyTo: extraSnippet?.replyTo,
     };
 
     setChats((prev) =>
@@ -1076,6 +1160,39 @@ export function useKamatelaStore() {
         return c;
       })
     );
+
+    // Simulated status progression: sent -> delivered -> read (double blue check)
+    setTimeout(() => {
+      setChats((prev) =>
+        prev.map((c) => {
+          if (c.id === chatId) {
+            return {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === newMsgId ? { ...m, status: 'delivered' } : m
+              ),
+            };
+          }
+          return c;
+        })
+      );
+    }, 600);
+
+    setTimeout(() => {
+      setChats((prev) =>
+        prev.map((c) => {
+          if (c.id === chatId) {
+            return {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === newMsgId ? { ...m, status: 'read' } : m
+              ),
+            };
+          }
+          return c;
+        })
+      );
+    }, 1800);
 
     // Simulated auto-reply from recipient if it's a business chat
     setTimeout(() => {
@@ -1100,6 +1217,98 @@ export function useKamatelaStore() {
         })
       );
     }, 1200);
+  };
+
+  const reactToMessage = (chatId: string, messageId: string, emoji: string) => {
+    setChats((prev) =>
+      prev.map((c) => {
+        if (c.id !== chatId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) => {
+            if (m.id !== messageId) return m;
+            const currentReactions = m.reactions || [];
+            const existing = currentReactions.find((r) => r.emoji === emoji);
+            let updatedReactions;
+            if (existing) {
+              if (existing.users.includes(user.id)) {
+                // Remove reaction if already toggled
+                updatedReactions = currentReactions
+                  .map((r) =>
+                    r.emoji === emoji
+                      ? { ...r, count: r.count - 1, users: r.users.filter((u) => u !== user.id) }
+                      : r
+                  )
+                  .filter((r) => r.count > 0);
+              } else {
+                updatedReactions = currentReactions.map((r) =>
+                  r.emoji === emoji
+                    ? { ...r, count: r.count + 1, users: [...r.users, user.id] }
+                    : r
+                );
+              }
+            } else {
+              updatedReactions = [...currentReactions, { emoji, count: 1, users: [user.id] }];
+            }
+            return { ...m, reactions: updatedReactions };
+          }),
+        };
+      })
+    );
+  };
+
+  const deleteMessage = (chatId: string, messageId: string, forEveryone: boolean) => {
+    setChats((prev) =>
+      prev.map((c) => {
+        if (c.id !== chatId) return c;
+        if (forEveryone) {
+          return {
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === messageId
+                ? {
+                    ...m,
+                    isDeleted: true,
+                    text: '🚫 This message was deleted',
+                    mediaType: undefined,
+                    mediaUrl: undefined,
+                  }
+                : m
+            ),
+          };
+        }
+        return {
+          ...c,
+          messages: c.messages.filter((m) => m.id !== messageId),
+        };
+      })
+    );
+  };
+
+  const toggleStarMessage = (chatId: string, messageId: string) => {
+    setChats((prev) =>
+      prev.map((c) => {
+        if (c.id !== chatId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) =>
+            m.id === messageId ? { ...m, isStarred: !m.isStarred } : m
+          ),
+        };
+      })
+    );
+  };
+
+  const setDisappearingTimer = (chatId: string, timer: 'off' | '24h' | '7d' | '90d') => {
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, disappearingTimer: timer } : c))
+    );
+  };
+
+  const clearChatHistory = (chatId: string) => {
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, messages: [], lastMessage: 'Chat cleared' } : c))
+    );
   };
 
   const addStory = (mediaUrl: string, caption?: string) => {
@@ -1742,6 +1951,11 @@ Fade out on the harmony...`;
     addCommentToVideo,
     uploadVideo,
     sendMessage,
+    reactToMessage,
+    deleteMessage,
+    toggleStarMessage,
+    setDisappearingTimer,
+    clearChatHistory,
     addStory,
     addProduct,
     deleteProduct,

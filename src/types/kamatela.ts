@@ -97,8 +97,40 @@ export interface ChatMessage {
   timestamp: string;
   status: 'sent' | 'delivered' | 'read';
   mediaUrl?: string;
-  mediaType?: 'image' | 'voice' | 'product' | 'song' | 'call_memo';
+  mediaType?: 'image' | 'voice' | 'product' | 'song' | 'call_memo' | 'document' | 'location' | 'contact' | 'momo';
   isOfflineCached?: boolean;
+  isStarred?: boolean;
+  isDeleted?: boolean;
+  reactions?: { emoji: string; count: number; users: string[] }[];
+  replyTo?: { id: string; senderName: string; text: string; mediaType?: string };
+  voiceNote?: {
+    durationSeconds: number;
+    waveform: number[];
+    audioUrl?: string;
+  };
+  documentSnippet?: {
+    fileName: string;
+    fileSize: string;
+    fileType: string;
+    url?: string;
+  };
+  locationSnippet?: {
+    title: string;
+    address: string;
+    lat: number;
+    lng: number;
+  };
+  contactCard?: {
+    name: string;
+    phone: string;
+    avatar?: string;
+  };
+  momoTransfer?: {
+    amount: number;
+    currency: string;
+    status: 'completed' | 'pending';
+    txId: string;
+  };
   callMemoSnippet?: {
     partnerName: string;
     callType: 'voice' | 'video';
@@ -131,6 +163,8 @@ export interface ChatConversation {
   lastTimestamp: string;
   unreadCount: number;
   isPinned?: boolean;
+  isMuted?: boolean;
+  disappearingTimer?: 'off' | '24h' | '7d' | '90d';
   messages: ChatMessage[];
 }
 

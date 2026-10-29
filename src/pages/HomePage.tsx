@@ -85,6 +85,11 @@ export const HomePage: React.FC = () => {
     addCommentToVideo,
     uploadVideo,
     sendMessage,
+    reactToMessage,
+    deleteMessage,
+    toggleStarMessage,
+    setDisappearingTimer,
+    clearChatHistory,
     addStory,
     addProduct,
     deleteProduct,
@@ -191,6 +196,11 @@ export const HomePage: React.FC = () => {
             onPromoteVoiceParticipant={promoteParticipant}
             onDemoteVoiceParticipant={demoteParticipant}
             onSaveCallMemoToChat={addCallMemoToChat}
+            onReactToMessage={reactToMessage}
+            onDeleteMessage={deleteMessage}
+            onToggleStarMessage={toggleStarMessage}
+            onSetDisappearingTimer={setDisappearingTimer}
+            onClearChatHistory={clearChatHistory}
             initialChatId={activeChatTargetId}
             blockedUserIds={blockedUserIds}
             onBlockUser={blockUser}
