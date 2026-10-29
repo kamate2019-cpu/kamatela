@@ -95,6 +95,7 @@ export interface ChatMessage {
   senderId: string;
   text: string;
   timestamp: string;
+  date?: string; // YYYY-MM-DD for date filtering
   status: 'sent' | 'delivered' | 'read';
   mediaUrl?: string;
   mediaType?: 'image' | 'voice' | 'product' | 'song' | 'call_memo' | 'document' | 'location' | 'contact' | 'momo';

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   ArrowLeft,
   Phone,
@@ -38,6 +38,11 @@ import {
   PhoneCall,
   Clock,
   ShieldCheck,
+  Search,
+  Calendar,
+  ChevronUp,
+  ChevronDown,
+  Filter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -107,6 +112,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
 
+  // Search by keyword and date state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'yesterday' | 'week' | 'custom'>('all');
+  const [customDate, setCustomDate] = useState('');
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [onlyShowMatches, setOnlyShowMatches] = useState(false);
+
   // Modals & Drawers
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
@@ -157,8 +170,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [chat.messages]);
+    if (!isSearchOpen) {
+      scrollToBottom();
+    }
+  }, [chat.messages, isSearchOpen]);
 
   // Clean up recording timer on unmount
   useEffect(() => {
@@ -169,6 +184,115 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       }
     };
   }, []);
+
+  // Filter messages based on searchKeyword and dateFilter
+  const matchedMessages = useMemo(() => {
+    const kw = searchKeyword.trim().toLowerCase();
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    return chat.messages.filter((msg) => {
+      // 1. Text / Keyword filter
+      if (kw) {
+        const textMatch = msg.text.toLowerCase().includes(kw);
+        const docMatch = msg.documentSnippet?.fileName.toLowerCase().includes(kw);
+        const locMatch =
+          msg.locationSnippet?.title.toLowerCase().includes(kw) ||
+          msg.locationSnippet?.address.toLowerCase().includes(kw);
+        const contactMatch = msg.contactCard?.name.toLowerCase().includes(kw);
+        const songMatch = msg.songSnippet?.title.toLowerCase().includes(kw);
+        const momoMatch = msg.momoTransfer?.txId.toLowerCase().includes(kw);
+
+        if (!textMatch && !docMatch && !locMatch && !contactMatch && !songMatch && !momoMatch) {
+          return false;
+        }
+      }
+
+      // 2. Date filter
+      if (dateFilter === 'today') {
+        const isToday =
+          msg.date === todayStr ||
+          (!msg.timestamp.toLowerCase().includes('yesterday') &&
+            !msg.timestamp.includes('/') &&
+            !msg.timestamp.includes('-') &&
+            (msg.timestamp.includes('AM') || msg.timestamp.includes('PM')));
+        if (!isToday) return false;
+      } else if (dateFilter === 'yesterday') {
+        const isYesterday = msg.timestamp.toLowerCase().includes('yesterday');
+        if (!isYesterday) return false;
+      } else if (dateFilter === 'week') {
+        // Within the current week / mock recent
+        const isNotOld = !msg.timestamp.includes('2025');
+        if (!isNotOld) return false;
+      } else if (dateFilter === 'custom' && customDate) {
+        const isCustom = msg.date === customDate || msg.timestamp.includes(customDate);
+        if (!isCustom) return false;
+      }
+
+      return true;
+    });
+  }, [chat.messages, searchKeyword, dateFilter, customDate]);
+
+  // Reset match index if matches change
+  useEffect(() => {
+    setCurrentMatchIndex(0);
+  }, [searchKeyword, dateFilter, customDate]);
+
+  // Jump to active match
+  const scrollToMatch = (index: number) => {
+    if (matchedMessages.length === 0) return;
+    const target = matchedMessages[index];
+    if (target) {
+      const el = document.getElementById(`msg-${target.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
+  const handleNextMatch = () => {
+    if (matchedMessages.length === 0) return;
+    const nextIdx = (currentMatchIndex + 1) % matchedMessages.length;
+    setCurrentMatchIndex(nextIdx);
+    scrollToMatch(nextIdx);
+  };
+
+  const handlePrevMatch = () => {
+    if (matchedMessages.length === 0) return;
+    const prevIdx = (currentMatchIndex - 1 + matchedMessages.length) % matchedMessages.length;
+    setCurrentMatchIndex(prevIdx);
+    scrollToMatch(prevIdx);
+  };
+
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    setSearchKeyword('');
+    setDateFilter('all');
+    setCustomDate('');
+    setOnlyShowMatches(false);
+    setCurrentMatchIndex(0);
+  };
+
+  // Helper to highlight matching text in message bubble
+  const renderHighlightedText = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    const parts = text.split(regex);
+
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <mark key={i} className="bg-amber-400 text-black px-0.5 rounded font-bold shadow-xs">
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,6 +436,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const messagesToDisplay = onlyShowMatches ? matchedMessages : chat.messages;
+
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] md:h-[680px] max-w-md md:max-w-xl mx-auto bg-card rounded-2xl border border-border shadow-xl overflow-hidden relative">
       {/* Hidden file input for camera/photo picker */}
@@ -370,8 +496,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           </button>
         </div>
 
-        {/* Audio & Video Call buttons + Overflow */}
+        {/* Audio, Video, Search, and Overflow Actions */}
         <div className="flex items-center gap-1 shrink-0">
+          {/* In-Chat Keyword Search Toggle Button */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              if (isSearchOpen) {
+                handleCloseSearch();
+              } else {
+                setIsSearchOpen(true);
+              }
+            }}
+            className={`h-8 w-8 p-0 rounded-full transition-colors ${
+              isSearchOpen
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                : 'text-foreground hover:text-emerald-500'
+            }`}
+            title="Search messages by keyword and date"
+          >
+            <Search className="w-4 h-4" />
+          </Button>
+
           {onSimulateIncomingCall && (
             <Button
               size="sm"
@@ -453,6 +600,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
                 <button
                   type="button"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="w-full px-3.5 py-2 text-left flex items-center gap-2 hover:bg-muted/70 text-foreground transition-colors"
+                >
+                  <Search className="w-4 h-4 text-emerald-400" />
+                  <span>Search in Chat</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => {
                     toast.info('Notifications muted for 8 hours');
                   }}
@@ -515,6 +671,144 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </div>
       </div>
 
+      {/* Docked In-Chat Search Bar for Keyword & Date Filtering */}
+      {isSearchOpen && (
+        <div className="bg-muted/95 backdrop-blur-md px-3 py-2 border-b border-border flex flex-col gap-2 shrink-0 animate-in slide-in-from-top-2 duration-200 z-10 shadow-md">
+          {/* Main search input line */}
+          <div className="flex items-center gap-1.5">
+            <div className="relative flex-1">
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Search messages by keyword..."
+                className="h-8 text-xs pl-8 pr-7 bg-background rounded-full border-border focus-visible:ring-emerald-500"
+                autoFocus
+              />
+              {searchKeyword && (
+                <button
+                  type="button"
+                  onClick={() => setSearchKeyword('')}
+                  className="w-5 h-5 rounded-full absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Match Counter and Next/Prev Navigation */}
+            {matchedMessages.length > 0 ? (
+              <div className="flex items-center gap-0.5 text-[11px] text-muted-foreground bg-card px-2 py-0.5 rounded-full border border-border shrink-0">
+                <span className="font-semibold text-emerald-400 mr-1">
+                  {currentMatchIndex + 1}/{matchedMessages.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={handlePrevMatch}
+                  className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-muted text-foreground transition-colors"
+                  title="Previous match"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextMatch}
+                  className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-muted text-foreground transition-colors"
+                  title="Next match"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (searchKeyword || dateFilter !== 'all') ? (
+              <span className="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded-full shrink-0 font-medium">
+                0 matches
+              </span>
+            ) : null}
+
+            {/* Close Search */}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleCloseSearch}
+              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground rounded-full"
+            >
+              Done
+            </Button>
+          </div>
+
+          {/* Date Filtering Options */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px] scrollbar-none">
+            <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0 font-medium">
+              <Calendar className="w-3 h-3 text-emerald-400" /> Filter:
+            </span>
+
+            {[
+              { id: 'all', label: 'All Dates' },
+              { id: 'today', label: 'Today' },
+              { id: 'yesterday', label: 'Yesterday' },
+              { id: 'week', label: 'This Week' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  setDateFilter(item.id as typeof dateFilter);
+                  setCustomDate('');
+                }}
+                className={`px-2.5 py-0.5 rounded-full font-medium transition-colors shrink-0 text-[10px] ${
+                  dateFilter === item.id && !customDate
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+
+            {/* Custom Date Picker */}
+            <div className="relative shrink-0 flex items-center">
+              <input
+                type="date"
+                value={customDate}
+                onChange={(e) => {
+                  setCustomDate(e.target.value);
+                  setDateFilter('custom');
+                }}
+                className={`text-[10px] h-6 px-2 rounded-full border bg-card text-foreground cursor-pointer ${
+                  customDate ? 'border-emerald-500 text-emerald-400 font-bold' : 'border-border'
+                }`}
+              />
+              {customDate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomDate('');
+                    setDateFilter('all');
+                  }}
+                  className="ml-1 text-[10px] text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Filter View Toggle: show all with highlight vs show matches only */}
+            <button
+              type="button"
+              onClick={() => setOnlyShowMatches(!onlyShowMatches)}
+              className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 transition-colors ${
+                onlyShowMatches
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-card text-muted-foreground border-border hover:text-foreground'
+              }`}
+              title="Toggle between showing matches only or whole conversation with highlights"
+            >
+              {onlyShowMatches ? 'Matches Only' : 'All Messages'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Blocked Warning Banner */}
       {isBlocked && (
         <div className="bg-rose-500/15 border-b border-rose-500/30 px-3 py-2 flex items-center justify-between text-xs text-rose-400 shrink-0">
@@ -546,16 +840,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           </span>
         </div>
 
-        {chat.messages.map((msg) => {
+        {/* Empty state when filtering */}
+        {onlyShowMatches && messagesToDisplay.length === 0 && (
+          <div className="text-center py-12 px-4 space-y-2">
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+              <Search className="w-5 h-5" />
+            </div>
+            <p className="text-xs font-semibold text-foreground">No matching messages</p>
+            <p className="text-[11px] text-muted-foreground">
+              No messages found matching "{searchKeyword}" with selected date filter.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSearchKeyword('');
+                setDateFilter('all');
+                setCustomDate('');
+                setOnlyShowMatches(false);
+              }}
+              className="text-xs rounded-full"
+            >
+              Reset Filters
+            </Button>
+          </div>
+        )}
+
+        {messagesToDisplay.map((msg) => {
           const isMe = msg.senderId === currentUserId;
           const isMenuOpenForThis = activeMessageMenuId === msg.id;
+          const isCurrentActiveMatch =
+            isSearchOpen &&
+            matchedMessages.length > 0 &&
+            matchedMessages[currentMatchIndex]?.id === msg.id;
 
           return (
             <div
               key={msg.id}
+              id={`msg-${msg.id}`}
               className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
                 isMe ? 'ml-auto' : 'mr-auto'
-              } group relative`}
+              } group relative transition-all duration-300`}
             >
               {/* Message Bubble */}
               <div
@@ -563,6 +888,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   isMe
                     ? 'bg-emerald-600 text-white rounded-tr-none'
                     : 'bg-card border border-border text-foreground rounded-tl-none'
+                } ${
+                  isCurrentActiveMatch
+                    ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-background scale-[1.02] shadow-lg shadow-amber-500/20'
+                    : ''
                 }`}
               >
                 {/* Quoted Message preview if reply */}
@@ -606,7 +935,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-xs truncate">{msg.documentSnippet.fileName}</p>
+                      <p className="font-bold text-xs truncate">
+                        {renderHighlightedText(msg.documentSnippet.fileName, searchKeyword)}
+                      </p>
                       <p className="text-[10px] opacity-80">{msg.documentSnippet.fileSize} • {msg.documentSnippet.fileType}</p>
                     </div>
                     <button
@@ -626,9 +957,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   }`}>
                     <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
                       <MapPin className="w-4 h-4 fill-emerald-400/20" />
-                      <span>{msg.locationSnippet.title}</span>
+                      <span>{renderHighlightedText(msg.locationSnippet.title, searchKeyword)}</span>
                     </div>
-                    <p className="text-[11px] opacity-85 leading-snug">{msg.locationSnippet.address}</p>
+                    <p className="text-[11px] opacity-85 leading-snug">
+                      {renderHighlightedText(msg.locationSnippet.address, searchKeyword)}
+                    </p>
                     <div className="h-20 w-full rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-[10px] font-mono text-emerald-300">
                       GPS: {msg.locationSnippet.lat.toFixed(4)}, {msg.locationSnippet.lng.toFixed(4)}
                     </div>
@@ -645,7 +978,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                         {msg.contactCard.name.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-xs truncate">{msg.contactCard.name}</p>
+                        <p className="font-bold text-xs truncate">
+                          {renderHighlightedText(msg.contactCard.name, searchKeyword)}
+                        </p>
                         <p className="text-[10px] font-mono opacity-80 truncate">{msg.contactCard.phone}</p>
                       </div>
                     </div>
@@ -675,7 +1010,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                       {msg.momoTransfer.currency} {msg.momoTransfer.amount.toLocaleString()}
                     </p>
                     <p className="text-[9px] font-mono text-muted-foreground">
-                      Ref: {msg.momoTransfer.txId}
+                      Ref: {renderHighlightedText(msg.momoTransfer.txId, searchKeyword)}
                     </p>
                   </div>
                 )}
@@ -733,7 +1068,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                         </span>
                       </div>
                       <p className="text-xs font-bold text-white truncate mt-0.5">
-                        {msg.songSnippet.title}
+                        {renderHighlightedText(msg.songSnippet.title, searchKeyword)}
                       </p>
                     </div>
                   </div>
@@ -754,7 +1089,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                       <div className="flex items-center gap-1 text-[10px] text-amber-300 font-semibold">
                         <ShoppingBag className="w-3 h-3" /> Catalog Item
                       </div>
-                      <p className="font-bold text-xs truncate">{msg.productSnippet.title}</p>
+                      <p className="font-bold text-xs truncate">
+                        {renderHighlightedText(msg.productSnippet.title, searchKeyword)}
+                      </p>
                       <p className="text-[10px] font-extrabold">${msg.productSnippet.price}</p>
                     </div>
                     <ExternalLink className="w-3 h-3 text-white/70 shrink-0" />
@@ -763,7 +1100,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
                 {/* Text Content */}
                 {msg.mediaType !== 'voice' && !msg.isDeleted && (
-                  <p className="leading-relaxed break-words">{msg.text}</p>
+                  <p className="leading-relaxed break-words">
+                    {renderHighlightedText(msg.text, searchKeyword)}
+                  </p>
                 )}
                 {msg.isDeleted && (
                   <p className="italic text-muted-foreground flex items-center gap-1">

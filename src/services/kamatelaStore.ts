@@ -1133,6 +1133,7 @@ export function useKamatelaStore() {
       senderId: user.id,
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toISOString().split('T')[0],
       status: 'sent',
       mediaType,
       mediaUrl,

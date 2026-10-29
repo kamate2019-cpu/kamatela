@@ -2,17 +2,18 @@
 
 ## 1. Application Overview
 - Application Name: KAMATELA
-- Description: A mobile-first Progressive Web Application structured as an integrated super-app inspired by ZTE iCenter architecture. KAMATELA combines phone-based onboarding and real-time instant messaging, dual co-host live streaming, offline-capable short video discovery, an AI Music Generation Studio with stem separation, multi-participant group voice rooms with stage mini-games, multi-channel mobile money wallet services, a creator/business marketplace, and a centralized Device Privacy and Security Hub backed by cross-network session resiliency.
+- Description: A mobile-first Progressive Web Application structured as an integrated super-app inspired by ZTE iCenter architecture. KAMATELA combines phone-based onboarding and real-time instant messaging, in-chat message search and date filtering, dual co-host live streaming, offline-capable short video discovery, an AI Music Generation Studio with stem separation, multi-participant group voice rooms with stage mini-games, multi-channel mobile money wallet services, a creator/business marketplace, and a centralized Device Privacy and Security Hub backed by cross-network session resiliency.
 
 ## 2. Users and Core Scenarios
 - Target Users:
-  - General Users: Individuals connecting with contacts, participating in voice rooms, chatting with rich messaging features, calling, and managing personal wallet balances.
+  - General Users: Individuals connecting with contacts, searching chat message history, participating in voice rooms, chatting with rich messaging features, calling, and managing personal wallet balances.
   - Creators and Live Broadcasters: Users generating AI music, sharing short videos with offline download support, hosting single or dual co-host live streams, and monetizing services.
   - Business Owners: Small businesses and merchants listing catalogs in the Creator Marketplace, sharing business QR codes, and processing mobile money payments.
 - Core Scenarios:
   - Registering and logging in via phone verification with international country code selection, receiving an on-screen 6-digit SMS code with auto-fill, and configuring a user profile with display name and status message.
   - Switching between saved demo or secondary accounts and managing global session state across browser tabs.
   - Chatting in 1-on-1 and group threads with rich text, voice notes with speed toggles, delivery receipts, quoted replies, emoji reactions, document/location/contact/money attachments, disappearing messages, and presence indicators.
+  - Searching message threads in real time using keyword queries and date filters with match count navigation.
   - Initiating or watching live streams, sending or accepting co-host requests, and broadcasting simultaneously on a 50/50 dual split-screen stage.
   - Placing voice and video calls with swipe controls and in-call recording memos with offline sync queuing.
   - Generating AI music tracks, separating stems (Vocals, Beat, Bassline), and playing audio continuously in a persistent floating mini player.
@@ -36,7 +37,12 @@ KAMATELA (iCenter Architecture)
 │   └── Account Switcher & Session Controller (Demo Profiles, Multi-Tab Sync, Logout)
 ├── Module 1: Communication Center (Instant Messaging & Calls)
 │   ├── Conversation List (Search, Presence Indicators, Sync Status, QR Entry, Sync Contacts Action)
-│   ├── Chat Room (Rich Messaging, Voice Notes, Rich Attachments, Message Actions, Delivery Status)
+│   ├── Chat Room
+│   │   ├── Chat Header & Search Bar Toggle
+│   │   ├── In-Chat Message Search Bar (Keyword Input, Date Filter, Match Counter, Match Navigators, Clear/Close)
+│   │   ├── Rich Messaging & Voice Notes
+│   │   ├── Rich Attachments & Cards
+│   │   └── Message Actions & Delivery Status
 │   ├── Chat Info & Media Drawer (Contact Profile, Media Gallery, Shared Docs, Starred Messages, Disappearing Timer)
 │   ├── QR Code Center (My Contact QR Card, Live Camera Scanner, File Upload Scanner)
 │   ├── Contact Management & Sync (Native Contact Picker, vCard Import, Matched/Invite Lists)
@@ -93,7 +99,14 @@ KAMATELA (iCenter Architecture)
   - Search bar to filter conversations by name or message content.
   - Header actions for QR Scanner and Contact Sync.
 - Chat Room:
-  - Header: Displays contact name, avatar, online / last seen status, live typing indicator simulation, and an info drawer toggle button.
+  - Header: Displays contact name, avatar, online / last seen status, live typing indicator simulation, search toggle icon, and an info drawer toggle button.
+  - In-Chat Message Search Bar:
+    - Toggled via the search icon in the chat header; docks directly below or replaces the header.
+    - Keyword text input supporting real-time text matching and keyword highlighting in message bubbles.
+    - Date filter selector supporting presets (e.g., Any Date, Today, This Week) and custom date selection to scope search results.
+    - Match status indicator displaying current index and total matches (e.g., \"3 of 12 matches\").
+    - Next / Previous navigation buttons to jump directly to matched messages in the thread.
+    - Clear keyword action and close/dismiss button to return to the standard chat view.
   - Message Stream: Chronological list of message bubbles with sender distinction, timestamp, and delivery status indicators (single check for Sent, double check for Delivered, blue double check for Read).
   - Voice Notes Module:
     - Microphone recording button with hold/tap action.
@@ -178,27 +191,33 @@ KAMATELA (iCenter Architecture)
    - Messages transition through three delivery statuses: Sent (single check), Delivered (double check), and Read (blue double check).
    - Quoted replies attach the target message payload above the new input and display a clickable quote reference in the rendered bubble.
    - Deleting a message for everyone replaces bubble content with a revoked message placeholder across conversation participants.
-3. Disappearing Messages Lifecycle:
+3. In-Chat Message Search and Filtering:
+   - Users activate search via the header search button.
+   - Queries filter messages containing matching text and/or matching the selected date criteria (e.g., Today, This Week, or a chosen date).
+   - Search matches highlight corresponding text within chat bubbles, update total match counts, and allow stepping through results chronologically using Next/Previous actions.
+   - Closing search resets highlights, clears keyword filters, and returns the chat stream to normal scrolling.
+4. Disappearing Messages Lifecycle:
    - When disappearing messages are enabled in Chat Info, messages sent after configuration automatically purge from the conversation thread upon timer expiration (24h, 7d, or 90d).
-4. Voice Note Audio Processing:
+5. Voice Note Audio Processing:
    - Recorded voice notes capture audio duration and waveform points locally.
    - Playback supports dynamic rate switching among 1x, 1.5x, and 2x speeds without altering audio pitch baseline.
-5. Dual Live Co-Hosting Mechanism:
+6. Dual Live Co-Hosting Mechanism:
    - Viewers can send co-host requests; hosts can accept/decline or invite any active viewer.
    - Upon acceptance, the broadcast transitions into a dual split-screen stage with active audio/video for both parties.
    - Either party leaving or disconnecting smoothly returns the broadcast to a single-host layout without ending the main live stream.
-6. Session Resiliency & Multi-Tab Synchronization:
+7. Session Resiliency & Multi-Tab Synchronization:
    - User sessions and authentication tokens remain active across network changes.
    - Authentication status, account switching, and wallet balance updates synchronize across all open browser tabs via BroadcastChannel.
-7. Background Action Queue:
+8. Background Action Queue:
    - Messages, top-ups, and profile changes made while offline are placed in a persistent local queue and automatically submitted upon network restoration.
-8. Audio Continuity:
+9. Audio Continuity:
    - The global floating mini player maintains uninterrupted audio playback across internal page transitions and tab changes for both online streams and cached tracks.
 
 ## 5. Exceptions and Edge Cases
 
 | Scenario | Condition | Handling |
 | :--- | :--- | :--- |
+| No Search Matches Found | Keyword or date filter yields zero matching messages | Display \"0 matches found\" status indicator in search bar and keep existing message stream position intact |
 | Invalid SMS Verification Code | User enters an incorrect 6-digit code | Highlight code inputs in red, clear input values, and display an invalid code error message |
 | Expired SMS Verification Code | Verification code entered after validity expiration | Prompt user to request a new SMS code and reset the resend timer |
 | Camera/Mic Permission Blocked | User denies media permissions during live stream or call | Show an explicit permission guidance banner and disable streaming actions until granted |
@@ -210,17 +229,18 @@ KAMATELA (iCenter Architecture)
 
 ## 6. Acceptance Criteria
 1. Users can register and log in by selecting a country code, inputting a phone number, receiving an on-screen 6-digit SMS code, and using the one-tap auto-fill action.
-2. Users can record voice notes with live waveform and duration display, cancel or send recordings, and play received voice notes at 1x, 1.5x, or 2x speed.
-3. Chat messages display accurate delivery indicators (Sent, Delivered, Read), support emoji reactions, quoted replies, text copying, starring, forwarding, and delete-for-everyone.
-4. Chat threads support sending and viewing rich attachment cards including Images, Documents with file size, Location map previews, Contact cards, and MoMo Money transfer cards.
-5. The Chat Info drawer displays contact profile details, shared media gallery, shared documents, starred messages, encryption status badge, and disappearing message timer configuration.
-6. Active conversation lists and chat headers display live typing and online/last seen presence status simulations.
-7. Broadcasters and viewers can establish a dual live co-host split-screen broadcast and revert to single-host mode upon disconnection.
-8. Users can generate, share, and scan KAMATELA contact QR codes using the camera or file upload scanner to view contact cards.
-9. Short videos can be downloaded in 480p, 720p, or 1080p quality tiers and played smoothly in Flight Mode while completely offline.
-10. AI Music Studio generates tracks, enables stem separation (Vocals, Beat, Bassline), and plays audio continuously via the persistent floating mini player.
-11. Group voice rooms support live voice discussions, background music, Trivia Quiz scoring, and Coin Lucky Wheel spins.
-12. Users can submit top-ups across M-Pesa, MTN MoMo, Orange Money, and Card with updated balance and transaction logs.
+2. Users can toggle the in-chat search bar from the chat header, execute text keyword queries, apply date filters, view match counts, and navigate between matched messages.
+3. Users can record voice notes with live waveform and duration display, cancel or send recordings, and play received voice notes at 1x, 1.5x, or 2x speed.
+4. Chat messages display accurate delivery indicators (Sent, Delivered, Read), support emoji reactions, quoted replies, text copying, starring, forwarding, and delete-for-everyone.
+5. Chat threads support sending and viewing rich attachment cards including Images, Documents with file size, Location map previews, Contact cards, and MoMo Money transfer cards.
+6. The Chat Info drawer displays contact profile details, shared media gallery, shared documents, starred messages, encryption status badge, and disappearing message timer configuration.
+7. Active conversation lists and chat headers display live typing and online/last seen presence status simulations.
+8. Broadcasters and viewers can establish a dual live co-host split-screen broadcast and revert to single-host mode upon disconnection.
+9. Users can generate, share, and scan KAMATELA contact QR codes using the camera or file upload scanner to view contact cards.
+10. Short videos can be downloaded in 480p, 720p, or 1080p quality tiers and played smoothly in Flight Mode while completely offline.
+11. AI Music Studio generates tracks, enables stem separation (Vocals, Beat, Bassline), and plays audio continuously via the persistent floating mini player.
+12. Group voice rooms support live voice discussions, background music, Trivia Quiz scoring, and Coin Lucky Wheel spins.
+13. Users can submit top-ups across M-Pesa, MTN MoMo, Orange Money, and Card with updated balance and transaction logs.
 
 ## 7. Out of Scope for Current Phase
 1. Multi-party video grid exceeding two broadcasters in a single live stream.
