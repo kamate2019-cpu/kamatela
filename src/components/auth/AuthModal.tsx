@@ -72,10 +72,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLogin,
   onLogout,
 }) => {
-  // Main tabs: 'phone' (WhatsApp style), 'qr' (WhatsApp Web), 'email' (Email/Password)
+  // Main tabs: 'phone' (KAMATELA Chat style), 'qr' (KAMATELA Chat Web), 'email' (Email/Password)
   const [authTab, setAuthTab] = useState<'phone' | 'qr' | 'email'>('phone');
 
-  // WhatsApp Phone registration/login steps: 1 = Enter phone, 2 = Enter OTP, 3 = Profile setup
+  // Mobile Phone registration/login steps: 1 = Enter phone, 2 = Enter OTP, 3 = Profile setup
   const [phoneStep, setPhoneStep] = useState<1 | 2 | 3>(1);
   const [selectedCountry, setSelectedCountry] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('555-019-2834');
@@ -83,7 +83,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [resendCountdown, setResendCountdown] = useState(45);
   const [generatedOtp, setGeneratedOtp] = useState('123456');
 
-  // WhatsApp Profile Setup state
+  // KAMATELA Chat Profile Setup state
   const [profileName, setProfileName] = useState(currentUser.name || 'Alex Kamate');
   const [profileStatus, setProfileStatus] = useState(currentUser.bio || 'Hey there! I am using KAMATELA.');
   const [profileAvatar, setProfileAvatar] = useState(currentUser.avatar || PRESET_AVATARS[0]);
@@ -138,7 +138,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setPhoneStep(3);
   };
 
-  // Step 3: Complete WhatsApp Profile Setup
+  // Step 3: Complete KAMATELA Chat Profile Setup
   const handleFinishProfileSetup = (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileName.trim()) {
@@ -158,9 +158,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       verified: true,
     };
 
-    localStorage.setItem('kamatela_whatsapp_registered', 'true');
-    localStorage.setItem('kamatela_whatsapp_phone', fullPhone);
-    localStorage.setItem('kamatela_whatsapp_name', updatedUser.name);
+    localStorage.setItem('kamatela_kamatela_chat_registered', 'true');
+    localStorage.setItem('kamatela_kamatela_chat_phone', fullPhone);
+    localStorage.setItem('kamatela_kamatela_chat_name', updatedUser.name);
 
     onLogin(updatedUser, `session_${Date.now()}`);
     toast.success(`Welcome to KAMATELA, ${updatedUser.name}!`);
@@ -188,7 +188,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     reader.readAsDataURL(file);
   };
 
-  // WhatsApp Web QR Code Link
+  // KAMATELA Chat Web QR Code Link
   const handleSimulateQrScan = () => {
     const linkedUser: User = {
       ...currentUser,
@@ -196,7 +196,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       verified: true,
     };
     onLogin(linkedUser, `session_qr_${Date.now()}`);
-    toast.success('Device linked via WhatsApp Web QR!');
+    toast.success('Device linked via Web QR!');
     onClose();
   };
 
@@ -220,7 +220,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-6 animate-in fade-in">
       <div className="w-full max-w-md rounded-3xl bg-card border border-border flex flex-col shadow-2xl overflow-hidden max-h-[92vh]">
-        {/* WhatsApp-Style Emerald Header */}
+        {/* KAMATELA Chat-Style Emerald Header */}
         <div className="p-4 border-b border-border/60 bg-gradient-to-r from-emerald-950/70 via-card to-teal-950/50 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <KamatelaLogo size={36} animated={true} />
@@ -231,7 +231,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   Super App
                 </span>
               </h3>
-              <p className="text-[11px] text-muted-foreground">Sign in or register like WhatsApp</p>
+              <p className="text-[11px] text-muted-foreground">Sign in or register with phone number</p>
             </div>
           </div>
 
@@ -278,7 +278,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* Tab Navigation: WhatsApp Phone, Web QR, Email */}
+        {/* Tab Navigation: Mobile Phone, Web QR, Email */}
         <div className="px-4 pt-3 pb-2 border-b border-border/50">
           <div className="flex rounded-xl bg-muted p-0.5 border border-border text-xs">
             <button
@@ -319,7 +319,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Content Body */}
         <div className="p-4 flex-1 overflow-y-auto space-y-4">
-          {/* TAB 1: WhatsApp Phone Verification */}
+          {/* TAB 1: Mobile Phone Verification */}
           {authTab === 'phone' && (
             <div className="space-y-4">
               {/* STEP 1: Phone Number Input */}
@@ -546,7 +546,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: WhatsApp Web QR Login */}
+          {/* TAB 2: KAMATELA Chat Web QR Login */}
           {authTab === 'qr' && (
             <div className="space-y-4 text-center py-2">
               <div className="space-y-1">

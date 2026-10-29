@@ -17,7 +17,7 @@ interface ProductDetailModalProps {
   product: BusinessProduct | null;
   isOpen: boolean;
   onClose: () => void;
-  onInquireWhatsApp: (product: BusinessProduct) => void;
+  onInquireChat: (product: BusinessProduct) => void;
   businessUser?: User;
 }
 
@@ -25,7 +25,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   isOpen,
   onClose,
-  onInquireWhatsApp,
+  onInquireChat,
   businessUser,
 }) => {
   if (!isOpen || !product) return null;
@@ -124,7 +124,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           )}
 
-          {/* WhatsApp Direct Action */}
+          {/* KAMATELA Chat Direct Action */}
           <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
             <Button
               type="button"
@@ -139,12 +139,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               type="button"
               size="sm"
               onClick={() => {
-                onInquireWhatsApp(product);
+                onInquireChat(product);
                 onClose();
               }}
               className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white w-full sm:flex-1 gap-1.5 shadow-md"
             >
-              <MessageCircle className="w-4 h-4" /> Message Seller on WhatsApp
+              <MessageCircle className="w-4 h-4" /> Message Seller on KAMATELA
             </Button>
           </DialogFooter>
         </div>

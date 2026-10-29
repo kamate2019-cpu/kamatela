@@ -53,7 +53,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           />
         </div>
 
-        {/* WhatsApp-style Filter Pills */}
+        {/* KAMATELA Chat-style Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
           <button
             type="button"
@@ -177,12 +177,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         )}
       </div>
 
-      {/* Floating WhatsApp Action Button (FAB) for Contacts */}
+      {/* Floating KAMATELA Chat Action Button (FAB) for Contacts */}
       <button
         type="button"
         onClick={onOpenSyncContacts || onNewChat}
         className="absolute bottom-16 right-4 w-12 h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all z-20 group"
-        title="Open WhatsApp Contacts"
+        title="Open Contacts"
       >
         <MessageSquarePlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
       </button>

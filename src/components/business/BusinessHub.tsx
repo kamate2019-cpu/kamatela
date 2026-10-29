@@ -89,7 +89,7 @@ export const BusinessHub: React.FC<BusinessHubProps> = ({
 
   return (
     <div className="w-full max-w-md md:max-w-4xl mx-auto space-y-3">
-      {/* Top Banner: KAMATELA Business Commerce & WhatsApp Hub */}
+      {/* Top Banner: KAMATELA Business Commerce & KAMATELA Chat Hub */}
       <div className="rounded-2xl p-4 bg-gradient-to-r from-amber-500/20 via-emerald-500/15 to-purple-500/15 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5">
@@ -98,7 +98,7 @@ export const BusinessHub: React.FC<BusinessHubProps> = ({
             </span>
           </div>
           <h2 className="text-base font-extrabold text-foreground">
-            Shop Directly via WhatsApp Messaging
+            Shop Directly via KAMATELA Messaging
           </h2>
           <p className="text-xs text-muted-foreground">
             Explore authentic catalogs, chat in real-time with creators and business owners.
@@ -280,7 +280,7 @@ export const BusinessHub: React.FC<BusinessHubProps> = ({
                           onStartBusinessChat(seller, prod);
                         }}
                         className="h-7 px-2 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500 hover:text-white rounded-lg gap-1"
-                        title="Chat on WhatsApp"
+                        title="Chat on KAMATELA"
                       >
                         <MessageCircle className="w-3 h-3" /> Inquire
                       </Button>
@@ -337,7 +337,7 @@ export const BusinessHub: React.FC<BusinessHubProps> = ({
                   onClick={() => onStartBusinessChat(biz)}
                   className="h-8 text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white gap-1.5 rounded-full"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" /> WhatsApp Chat
+                  <MessageCircle className="w-3.5 h-3.5" /> KAMATELA Chat
                 </Button>
               </div>
             </div>
@@ -390,7 +390,7 @@ export const BusinessHub: React.FC<BusinessHubProps> = ({
         product={selectedProduct}
         isOpen={Boolean(selectedProduct)}
         onClose={() => setSelectedProduct(null)}
-        onInquireWhatsApp={(prod) => {
+        onInquireChat={(prod) => {
           const seller = allBusinesses.find((b) => b.id === prod.businessId) || mockUsers.zara;
           onStartBusinessChat(seller, prod);
         }}

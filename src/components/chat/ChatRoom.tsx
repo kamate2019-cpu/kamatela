@@ -69,7 +69,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
 
-  // WhatsApp Overflow Menu & Safety Modals
+  // KAMATELA Chat Overflow Menu & Safety Modals
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -244,7 +244,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         className="hidden"
       />
 
-      {/* WhatsApp Chat Header */}
+      {/* KAMATELA Chat Header */}
       <div className="bg-muted/80 backdrop-blur-md px-3 py-2.5 border-b border-border flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <button
@@ -279,7 +279,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           </div>
         </div>
 
-        {/* WhatsApp Audio & Video Call buttons */}
+        {/* KAMATELA Chat Audio & Video Call buttons */}
         <div className="flex items-center gap-1 shrink-0">
           {/* Simulate Incoming Call button */}
           {onSimulateIncomingCall && (
@@ -310,7 +310,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             className={`h-8 w-8 p-0 rounded-full ${
               isBlocked ? 'opacity-40 cursor-not-allowed' : 'text-foreground hover:text-emerald-500'
             }`}
-            title={isBlocked ? 'Contact is blocked' : 'Real WhatsApp Voice Call'}
+            title={isBlocked ? 'Contact is blocked' : 'KAMATELA Voice Call'}
           >
             <Phone className="w-4 h-4" />
           </Button>
@@ -330,12 +330,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             className={`h-8 w-8 p-0 rounded-full ${
               isBlocked ? 'opacity-40 cursor-not-allowed' : 'text-foreground hover:text-emerald-500'
             }`}
-            title={isBlocked ? 'Contact is blocked' : 'Real WhatsApp Video Call'}
+            title={isBlocked ? 'Contact is blocked' : 'KAMATELA Video Call'}
           >
             <Video className="w-4 h-4" />
           </Button>
 
-          {/* Three-dot WhatsApp Chat Overflow Menu */}
+          {/* Three-dot KAMATELA Chat Overflow Menu */}
           <div className="relative">
             <Button
               size="sm"
@@ -424,7 +424,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </div>
       </div>
 
-      {/* WhatsApp Blocked Warning Banner */}
+      {/* KAMATELA Chat Blocked Warning Banner */}
       {isBlocked && (
         <div className="px-4 py-2.5 bg-rose-500/15 border-b border-rose-500/30 flex items-center justify-between text-xs text-rose-300">
           <div className="flex items-center gap-2">
@@ -444,7 +444,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </div>
       )}
 
-      {/* Messages Scroll Area with WhatsApp pattern background */}
+      {/* Messages Scroll Area with KAMATELA Chat pattern background */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] bg-background/50">
         <div className="text-center my-2">
           <span className="inline-block px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-300">
@@ -706,7 +706,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </form>
       )}
 
-      {/* WhatsApp Block Contact Confirmation Dialog */}
+      {/* KAMATELA Chat Block Contact Confirmation Dialog */}
       {isBlockModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
           <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-5 shadow-2xl space-y-4">
@@ -719,7 +719,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   Block {chat.participant.name}?
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
-                  WhatsApp Contact Protection
+                  KAMATELA Contact Protection
                 </p>
               </div>
             </div>
@@ -774,7 +774,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </div>
       )}
 
-      {/* WhatsApp Report Contact Dialog */}
+      {/* KAMATELA Chat Report Contact Dialog */}
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-card border border-border p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">

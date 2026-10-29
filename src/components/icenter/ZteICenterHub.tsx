@@ -71,11 +71,11 @@ export const ZteICenterHub: React.FC<ZteICenterHubProps> = ({
   const [dataSaverEnabled, setDataSaverEnabled] = useState(false);
 
   const registeredPhone =
-    localStorage.getItem('kamatela_whatsapp_phone') ||
+    localStorage.getItem('kamatela_kamatela_chat_phone') ||
     currentUser.businessPhone ||
     '+225 07 01 23 45 67';
-  const isWhatsAppVerified =
-    localStorage.getItem('kamatela_whatsapp_registered') === 'true';
+  const isChatVerified =
+    localStorage.getItem('kamatela_kamatela_chat_registered') === 'true';
 
   const handleQuickOptimize = () => {
     setIsScanning(true);
@@ -191,13 +191,13 @@ export const ZteICenterHub: React.FC<ZteICenterHubProps> = ({
           </div>
         </div>
 
-        {/* WhatsApp Verified Status Bar */}
+        {/* KAMATELA Chat Verified Status Bar */}
         <div className="flex items-center justify-between p-2 bg-emerald-950/30 border border-emerald-500/30 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold text-emerald-400">WhatsApp Engine:</span>
+            <span className="font-bold text-emerald-400">Chat Engine:</span>
             <span className="font-mono text-foreground text-[11px]">
-              {isWhatsAppVerified ? registeredPhone : 'Phone Verification Needed'}
+              {isChatVerified ? registeredPhone : 'Phone Verification Needed'}
             </span>
           </div>
 
@@ -207,7 +207,7 @@ export const ZteICenterHub: React.FC<ZteICenterHubProps> = ({
               onClick={() => onNavigateTab('chats')}
               className="text-[11px] text-emerald-400 hover:underline font-semibold"
             >
-              {isWhatsAppVerified ? 'Open Chats' : 'Verify Phone'}
+              {isChatVerified ? 'Open Chats' : 'Verify Phone'}
             </button>
             <span className="text-border">|</span>
             <button
@@ -226,7 +226,7 @@ export const ZteICenterHub: React.FC<ZteICenterHubProps> = ({
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Activity className="w-3.5 h-3.5 text-primary" />
-            <span>KAMATELA Integrated Tools ({isWhatsAppVerified ? 'Connected' : 'Ready'})</span>
+            <span>KAMATELA Integrated Tools ({isChatVerified ? 'Connected' : 'Ready'})</span>
           </h3>
           <span className="text-[10px] text-muted-foreground font-mono">
             {coins} Coins Available
@@ -234,7 +234,7 @@ export const ZteICenterHub: React.FC<ZteICenterHubProps> = ({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          {/* Tile 1: WhatsApp Chats & Calls */}
+          {/* Tile 1: KAMATELA Chats & Calls */}
           <div
             onClick={() => onNavigateTab('chats')}
             className="hud-panel p-3 cursor-pointer hover:border-emerald-500 transition-all space-y-2 flex flex-col justify-between group"
@@ -251,7 +251,7 @@ export const ZteICenterHub: React.FC<ZteICenterHubProps> = ({
                 )}
               </div>
               <h4 className="text-xs font-bold text-foreground mt-2 group-hover:text-emerald-400 transition-colors">
-                WhatsApp Chats
+                KAMATELA Chats
               </h4>
               <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
                 Encrypted messages, voice notes & status stories

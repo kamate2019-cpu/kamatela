@@ -347,7 +347,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
               </div>
               <p className="text-xs font-semibold truncate leading-tight">{video.linkedProduct.title}</p>
               <p className="text-[11px] font-extrabold text-amber-200">
-                {video.linkedProduct.currency}{video.linkedProduct.price} <span className="text-[9px] font-normal underline ml-1">Inquire on WhatsApp</span>
+                {video.linkedProduct.currency}{video.linkedProduct.price} <span className="text-[9px] font-normal underline ml-1">Inquire on KAMATELA</span>
               </p>
             </div>
           </div>

@@ -414,7 +414,7 @@ export const CallOverlayModal: React.FC<CallOverlayModalProps> = ({
         <div className="w-full text-center pt-3 z-20 space-y-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
             {isVideoEnabled ? <Video className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
-            WhatsApp HD {isVideoEnabled ? 'Video' : 'Voice'} Call
+            KAMATELA HD {isVideoEnabled ? 'Video' : 'Voice'} Call
           </div>
 
           <h2 className="text-xl font-bold truncate px-2">{user.businessName || user.name}</h2>

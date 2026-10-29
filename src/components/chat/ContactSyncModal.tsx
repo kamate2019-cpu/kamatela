@@ -26,7 +26,7 @@ import {
   matchContactsWithUsers,
   sampleDeviceAddressBook,
   getSmsInviteUrl,
-  getWhatsAppInviteUrl,
+  getChatInviteUrl,
   type DeviceContact,
   type SyncResult,
 } from '@/utils/contactSync';
@@ -362,16 +362,16 @@ export const ContactSyncModal: React.FC<ContactSyncModalProps> = ({
                     SMS
                   </a>
 
-                  {/* WhatsApp Invite */}
+                  {/* KAMATELA Chat Invite */}
                   <a
-                    href={getWhatsAppInviteUrl(item.tel, currentUser.name)}
+                    href={getChatInviteUrl(item.tel, currentUser.name)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="h-7 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-semibold flex items-center gap-1 transition-colors shadow-sm"
-                    title="Send invite link via WhatsApp"
+                    title="Send invite link via SMS"
                   >
                     <Share2 className="w-3 h-3" />
-                    WhatsApp
+                    KAMATELA Chat
                   </a>
                 </div>
               </div>

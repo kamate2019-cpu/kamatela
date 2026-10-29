@@ -212,7 +212,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 <Store className="w-4 h-4 text-amber-400" />
                 <div>
                   <p className="text-xs font-bold text-foreground">Business Account Mode</p>
-                  <p className="text-[10px] text-muted-foreground">Unlock product catalogs and WhatsApp customer chat</p>
+                  <p className="text-[10px] text-muted-foreground">Unlock product catalogs and Direct customer chat</p>
                 </div>
               </div>
               <Switch checked={isBusiness} onCheckedChange={setIsBusiness} />
@@ -242,7 +242,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[11px]">WhatsApp Phone</Label>
+                    <Label className="text-[11px]">Mobile Phone</Label>
                     <Input
                       value={businessPhone}
                       onChange={(e) => setBusinessPhone(e.target.value)}

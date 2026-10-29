@@ -17,7 +17,7 @@ import { VoiceRoomsFeed } from '@/components/voiceRooms/VoiceRoomsFeed';
 import { CreateVoiceRoomModal } from '@/components/voiceRooms/CreateVoiceRoomModal';
 import { LiveVoiceRoomModal } from '@/components/voiceRooms/LiveVoiceRoomModal';
 import { IncomingCallModal } from './IncomingCallModal';
-import { WhatsAppContactsModal } from './WhatsAppContactsModal';
+import { ContactsDirectoryModal } from './ContactsDirectoryModal';
 import { ContactQRModal } from './ContactQRModal';
 import {
   MessageSquare,
@@ -161,9 +161,9 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
     setActiveVoiceRoomId(newRoomId);
   };
 
-  // WhatsApp Phone Signup & Login Gate
-  const [isWhatsAppRegistered, setIsWhatsAppRegistered] = useState<boolean>(() => {
-    return localStorage.getItem('kamatela_whatsapp_registered') === 'true';
+  // Mobile Phone Signup & Login Gate
+  const [isChatRegistered, setIsChatRegistered] = useState<boolean>(() => {
+    return localStorage.getItem('kamatela_chat_registered') === 'true';
   });
   const [authStep, setAuthStep] = useState<1 | 2 | 3>(1);
   const [authCountry, setAuthCountry] = useState('+225');
@@ -172,7 +172,7 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
   const [authGeneratedCode, setAuthGeneratedCode] = useState('123456');
   const [authResendSeconds, setAuthResendSeconds] = useState(45);
   const [authName, setAuthName] = useState(currentUser.name || 'Alex Kamate');
-  const [authStatus, setAuthStatus] = useState('Hey there! I am using KAMATELA WhatsApp.');
+  const [authStatus, setAuthStatus] = useState('Hey there! I am using KAMATELA Chat.');
   const [authAvatar] = useState(
     currentUser.avatar ||
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
@@ -188,16 +188,16 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
     return () => clearInterval(timer);
   }, [authStep, authResendSeconds]);
 
-  if (!isWhatsAppRegistered) {
+  if (!isChatRegistered) {
     return (
       <div className="w-full max-w-md mx-auto my-3 p-5 bg-card/90 backdrop-blur-md border border-emerald-500/30 rounded-3xl shadow-2xl space-y-5">
-        {/* WhatsApp Brand Header */}
+        {/* KAMATELA Chat Brand Header */}
         <div className="text-center space-y-2">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
             <MessageSquare className="w-8 h-8" />
           </div>
           <h2 className="text-lg font-extrabold text-foreground tracking-tight">
-            Welcome to KAMATELA WhatsApp
+            Welcome to KAMATELA Chat
           </h2>
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-400" />
@@ -376,14 +376,14 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
                 return;
               }
               const fullPhoneNumber = `${authCountry} ${authPhone.trim()}`;
-              localStorage.setItem('kamatela_whatsapp_registered', 'true');
-              localStorage.setItem('kamatela_whatsapp_phone', fullPhoneNumber);
-              localStorage.setItem('kamatela_whatsapp_name', authName.trim());
+              localStorage.setItem('kamatela_kamatela_chat_registered', 'true');
+              localStorage.setItem('kamatela_kamatela_chat_phone', fullPhoneNumber);
+              localStorage.setItem('kamatela_kamatela_chat_name', authName.trim());
               currentUser.name = authName.trim();
               currentUser.businessPhone = fullPhoneNumber;
               currentUser.avatar = authAvatar;
-              setIsWhatsAppRegistered(true);
-              toast.success(`Welcome to KAMATELA WhatsApp, ${authName.trim()}!`);
+              setIsChatRegistered(true);
+              toast.success(`Welcome to KAMATELA Chat, ${authName.trim()}!`);
             }}
             className="space-y-4"
           >
@@ -435,7 +435,7 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
               type="submit"
               className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20"
             >
-              Start Chatting on WhatsApp
+              Start Chatting on KAMATELA
             </Button>
           </form>
         )}
@@ -445,23 +445,23 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
 
   return (
     <div className="w-full max-w-md md:max-w-4xl mx-auto space-y-3">
-      {/* WhatsApp Connected Status Bar */}
+      {/* KAMATELA Chat Connected Status Bar */}
       {!activeChat && (
         <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-950/40 border border-emerald-500/25 rounded-2xl text-xs text-emerald-300">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="font-semibold text-emerald-400">WhatsApp:</span>
+            <span className="font-semibold text-emerald-400">Phone Chat:</span>
             <span className="font-mono text-white text-[11px]">
-              {localStorage.getItem('kamatela_whatsapp_phone') || currentUser.businessPhone || '+225 07 01 23 45'}
+              {localStorage.getItem('kamatela_kamatela_chat_phone') || currentUser.businessPhone || '+225 07 01 23 45'}
             </span>
           </div>
           <button
             type="button"
             onClick={() => {
-              localStorage.removeItem('kamatela_whatsapp_registered');
-              setIsWhatsAppRegistered(false);
+              localStorage.removeItem('kamatela_chat_registered');
+              setIsChatRegistered(false);
               setAuthStep(1);
-              toast.info('Logged out from WhatsApp. Enter number to sign in.');
+              toast.info('Logged out from Chat. Enter number to sign in.');
             }}
             className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-emerald-400 font-medium transition-colors"
           >
@@ -470,7 +470,7 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
           </button>
         </div>
       )}
-      {/* Top WhatsApp & Rooms Navigation (Chats / Voice Rooms / Calls) */}
+      {/* Top KAMATELA Chat & Rooms Navigation (Chats / Voice Rooms / Calls) */}
       {!activeChat && (
         <div className="flex items-center justify-between border-b border-border/80 px-1 pb-1">
           <div className="flex items-center gap-2 md:gap-4 overflow-x-auto whitespace-nowrap">
@@ -660,8 +660,8 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
         onDemoteSpeaker={onDemoteVoiceParticipant}
       />
 
-      {/* WhatsApp Contacts Directory & Manager Modal */}
-      <WhatsAppContactsModal
+      {/* KAMATELA Chat Contacts Directory & Manager Modal */}
+      <ContactsDirectoryModal
         isOpen={isSyncModalOpen}
         onClose={() => setIsSyncModalOpen(false)}
         currentUser={currentUser}

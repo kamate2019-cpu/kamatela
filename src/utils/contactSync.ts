@@ -5,7 +5,7 @@
  * 2. vCard (.vcf) address book file import
  * 3. Quick simulated address book for instant preview & testing
  * 4. Automatic friend matching with registered KAMATELA creators & users
- * 5. SMS & WhatsApp invitation links for non-registered contacts
+ * 5. SMS & KAMATELA Chat invitation links for non-registered contacts
  */
 
 import type { User } from '@/types/kamatela';
@@ -215,11 +215,11 @@ export function getSmsInviteUrl(phone: string, inviterName: string = 'A friend')
 }
 
 /**
- * Generate WhatsApp invite link
+ * Generate KAMATELA Chat invite link
  */
-export function getWhatsAppInviteUrl(phone: string, inviterName: string = 'A friend'): string {
+export function getChatInviteUrl(phone: string, inviterName: string = 'A friend'): string {
   const clean = normalizePhone(phone);
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://kamatela.app';
   const message = `Hey! Join me on KAMATELA Super App. We can chat, make voice/video calls, and create AI music together! Check it out: ${appUrl}`;
-  return `https://api.whatsapp.com/send?phone=${clean}&text=${encodeURIComponent(message)}`;
+  return `https://api.kamatela_chat.com/send?phone=${clean}&text=${encodeURIComponent(message)}`;
 }

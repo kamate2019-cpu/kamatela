@@ -255,7 +255,7 @@ export const initialVideos: VideoItem[] = [
         userId: 'user_marcus',
         userName: 'Chef Marcus',
         userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-        text: 'Sent an inquiry through your WhatsApp button. Looking for wholesale bundles!',
+        text: 'Sent an inquiry through your KAMATELA Chat button. Looking for wholesale bundles!',
         timestamp: '45m ago',
         likes: 15,
       }
@@ -334,7 +334,7 @@ export const initialChats: ChatConversation[] = [
     id: 'chat_official',
     type: 'business',
     participant: mockUsers.kamatela_official,
-    lastMessage: 'Welcome to KAMATELA WhatsApp! Your account is verified. Tap here to start chatting securely.',
+    lastMessage: 'Welcome to KAMATELA Chat! Your account is verified. Tap here to start chatting securely.',
     lastTimestamp: '10:42 AM',
     unreadCount: 1,
     isPinned: true,
@@ -342,14 +342,14 @@ export const initialChats: ChatConversation[] = [
       {
         id: 'm1',
         senderId: 'user_official',
-        text: 'Welcome to KAMATELA WhatsApp! Messages and calls are end-to-end encrypted. No one outside of this chat, not even KAMATELA, can read or listen to them.',
+        text: 'Welcome to KAMATELA Chat! Messages and calls are end-to-end encrypted. No one outside of this chat, not even KAMATELA, can read or listen to them.',
         timestamp: '10:40 AM',
         status: 'read',
       },
       {
         id: 'm2',
         senderId: 'user_official',
-        text: 'Welcome to KAMATELA WhatsApp! Your account is verified. Tap here to start chatting securely.',
+        text: 'Welcome to KAMATELA Chat! Your account is verified. Tap here to start chatting securely.',
         timestamp: '10:42 AM',
         status: 'delivered',
       }
@@ -359,7 +359,7 @@ export const initialChats: ChatConversation[] = [
     id: 'chat_mamadou',
     type: 'direct',
     participant: mockUsers.mamadou,
-    lastMessage: 'Hey! Glad to see you on KAMATELA WhatsApp. Everything is running smoothly now!',
+    lastMessage: 'Hey! Glad to see you on KAMATELA Chat. Everything is running smoothly now!',
     lastTimestamp: '9:15 AM',
     unreadCount: 0,
     isPinned: true,
@@ -381,7 +381,7 @@ export const initialChats: ChatConversation[] = [
       {
         id: 'm5',
         senderId: 'user_mamadou',
-        text: 'Hey! Glad to see you on KAMATELA WhatsApp. Everything is running smoothly now!',
+        text: 'Hey! Glad to see you on KAMATELA Chat. Everything is running smoothly now!',
         timestamp: '9:15 AM',
         status: 'delivered',
       }
@@ -587,7 +587,7 @@ export const initialVoiceRooms: VoiceRoom[] = [
   {
     id: 'room_ecommerce_growth',
     title: 'E-Commerce Catalogs & Social Selling 📦',
-    description: 'How to convert short video viewers into direct WhatsApp catalog sales and loyal repeat buyers.',
+    description: 'How to convert short video viewers into direct catalog sales and loyal repeat buyers.',
     topic: 'Business & Sales',
     host: mockUsers.elena,
     isLive: true,

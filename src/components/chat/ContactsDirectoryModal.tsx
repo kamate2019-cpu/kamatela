@@ -31,12 +31,12 @@ import {
   matchContactsWithUsers,
   sampleDeviceAddressBook,
   getSmsInviteUrl,
-  getWhatsAppInviteUrl,
+  getChatInviteUrl,
   type DeviceContact,
   type SyncResult,
 } from '@/utils/contactSync';
 
-interface WhatsAppContactsModalProps {
+interface ContactsDirectoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: User;
@@ -48,7 +48,7 @@ interface WhatsAppContactsModalProps {
   onUnblockUser?: (userId: string) => void;
 }
 
-export const WhatsAppContactsModal: React.FC<WhatsAppContactsModalProps> = ({
+export const ContactsDirectoryModal: React.FC<ContactsDirectoryModalProps> = ({
   isOpen,
   onClose,
   currentUser,
@@ -161,13 +161,13 @@ export const WhatsAppContactsModal: React.FC<WhatsAppContactsModalProps> = ({
         return;
       }
     }
-    toast.info('Loaded device contacts and WhatsApp friends!');
+    toast.info('Loaded device contacts and KAMATELA friends!');
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-6 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-card border border-border flex flex-col shadow-2xl overflow-hidden max-h-[92vh]">
-        {/* WhatsApp-Style Emerald Top App Bar */}
+        {/* KAMATELA Chat-Style Emerald Top App Bar */}
         <div className="p-4 border-b border-border/70 bg-gradient-to-r from-emerald-950/80 via-card to-teal-950/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
@@ -229,7 +229,7 @@ export const WhatsAppContactsModal: React.FC<WhatsAppContactsModalProps> = ({
           </div>
         </div>
 
-        {/* WhatsApp Action Buttons Header: New Group, New Contact, QR Code */}
+        {/* KAMATELA Chat Action Buttons Header: New Group, New Contact, QR Code */}
         <div className="p-3 border-b border-border/40 grid grid-cols-3 gap-2 bg-muted/10 text-xs">
           <button
             type="button"
@@ -439,7 +439,7 @@ export const WhatsAppContactsModal: React.FC<WhatsAppContactsModalProps> = ({
                                   onClose();
                                 }}
                                 className="h-8 w-8 p-0 rounded-full text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
-                                title="Chat on WhatsApp"
+                                title="Chat on KAMATELA"
                               >
                                 <MessageSquare className="w-4 h-4 fill-current" />
                               </Button>
@@ -530,7 +530,7 @@ export const WhatsAppContactsModal: React.FC<WhatsAppContactsModalProps> = ({
 
                         <div className="flex items-center gap-1 shrink-0">
                           <a
-                            href={getWhatsAppInviteUrl(c.tel, currentUser.name)}
+                            href={getChatInviteUrl(c.tel, currentUser.name)}
                             target="_blank"
                             rel="noreferrer"
                             className="h-7 px-3 text-[11px] font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1 shadow-sm transition-colors"

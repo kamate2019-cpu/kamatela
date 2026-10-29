@@ -110,7 +110,7 @@ export const HomePage: React.FC = () => {
       category: 'Electronics',
       imageUrl: productSnippet.imageUrl,
       inStock: true,
-      features: ['Official Verified Item', 'Available for WhatsApp Inquiry'],
+      features: ['Official Verified Item', 'Available for Direct Inquiry'],
     };
     setSelectedProduct(fullProd);
   };
@@ -370,7 +370,7 @@ export const HomePage: React.FC = () => {
         product={selectedProduct}
         isOpen={Boolean(selectedProduct)}
         onClose={() => setSelectedProduct(null)}
-        onInquireWhatsApp={(p) => {
+        onInquireChat={(p) => {
           const seller =
             [mockUsers.zara, mockUsers.elena, mockUsers.marcus, user].find(
               (u) => u.id === p.businessId

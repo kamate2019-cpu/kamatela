@@ -73,7 +73,7 @@ export const IncomingCallModal: React.FC<IncomingCallModalProps> = ({
         <div className="w-full flex items-center justify-between z-10 pt-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
             {callType === 'video' ? <Video className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
-            Incoming WhatsApp {callType === 'video' ? 'Video' : 'Voice'} Call
+            Incoming KAMATELA {callType === 'video' ? 'Video' : 'Voice'} Call
           </div>
 
           <button

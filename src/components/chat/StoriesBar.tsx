@@ -24,7 +24,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
     ];
     const picked = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
-    onAddStory(picked, 'Updated my WhatsApp status on KAMATELA ✨');
+    onAddStory(picked, 'Updated my status on KAMATELA ✨');
     toast.success('Your 24-hour Status has been posted!');
   };
 

@@ -67,7 +67,7 @@ export const KamatelaLogo: React.FC<KamatelaLogoProps> = ({
 
           {/* Sculpted Monogram "K" */}
           <g>
-            {/* Left Pillar + WhatsApp Speech Bubble Tail */}
+            {/* Left Pillar + KAMATELA Chat Speech Bubble Tail */}
             <path
               d="M48 48 C48 42, 53 38, 59 38 L68 38 C74 38, 79 43, 79 49 L79 143 C79 149, 74 154, 68 154 L59 154 C53 154, 48 149, 48 143 Z"
               fill="url(#klEmerald)"
